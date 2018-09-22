@@ -5,16 +5,17 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="I hate frontend development..">
+    <meta name="author" content="Michael Mooney">
 
-    <title>Modern Business - Start Bootstrap Template</title>
+    <title>Lease Retainer - Control Panel</title>
 
     <!-- Bootstrap core CSS -->
     <link href="static/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
         body {
           padding-top: 80px;
+          body{font-size: 14px;}
         }
         .portfolio-item {
           margin-bottom: 30px;
@@ -27,7 +28,7 @@
   <body>
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container">
-        <span class="navbar-brand">Lease Retainer Panel</span>
+        <span class="navbar-brand">Lease Retainer</span>
       </div>
     </nav>
     
@@ -37,20 +38,34 @@
       % if client_leases:
         <div class="row">
           % for key, values in client_leases.items():
-            <div class="col-lg-4 mb-4">
+            <div class="col-sm-4 mb-4">
               <div class="card h-100">
                 <h5 class="card-header">${key}</h5>
-                <div class="card-body">
-                  % for element in values:
-                  <p><strong>IP Address</strong></p>
-                  <p class="card-text">${element['ip_address']}</p>
-                  <p><strong>Expiration</strong></p>
-                  <p class="card-text">${element['expiration']}</p>
-                  <hr/>
-                  % endfor
+                <div class="card-body" >
+                  <div class="table-responsive">          
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>IP Address</th>
+                          <th>Expiration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        % for element in values:
+                          <tbody>
+                            <tr>
+                              <td>${values.index(element)}</td>
+                              <td>${element['ip_address']}</td>
+                              <td>${element['expiration']}</td>
+                            </tr>
+                          </tbody>
+                        % endfor
+                      </table>
+                    </div>
                 </div>
                 <div class="card-footer">
-                  <a href="#" class="btn btn-primary">Set Active</a> <a href="#" class="btn btn-primary">Create New</a>
+                  <a href="#" class="btn btn-primary">Set</a> <a href="#" class="btn btn-primary">Create</a>
                 </div>
               </div>
             </div>
@@ -60,7 +75,7 @@
     % else:
       <div class="row mb-4">
         <div class="col-md-8">
-          <p>Nothing to report.</p>
+          <p>Uh oh, nothing to show.</p>
         </div>
       </div>
     % endif
