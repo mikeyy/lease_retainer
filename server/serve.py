@@ -2,7 +2,7 @@ import os
 import cherrypy
 import simplejson
 
-from lib import moments
+from libs import moments
 
 from mako.template import Template
 
