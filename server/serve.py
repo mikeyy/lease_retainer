@@ -19,7 +19,7 @@ class Root(object):
         cl = cherrypy.request.headers['Content-Length']
         rawbody = cherrypy.request.body.read(int(cl))
         body = simplejson.loads(rawbody)
-        client_id = body.keys()[0]
+        client_id = next(iter(body.keys()))
         if client_id not in self.client_leases.keys():
             self.client_leases[client_id] = dedup_dict_list(body[client_id])
         else:

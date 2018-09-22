@@ -12,38 +12,51 @@
 
     <!-- Bootstrap core CSS -->
     <link href="static/bootstrap.min.css" rel="stylesheet">
-    <style type="stylesheet/css">
+    <style type="text/css">
         body {
-          padding-top: 54px;
+          padding-top: 80px;
         }
+        .portfolio-item {
+          margin-bottom: 30px;
+        }
+
     </style>
 
   </head>
 
   <body>
-   <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container">
         <span class="navbar-brand">Lease Retainer Panel</span>
       </div>
     </nav>
+    
     <div class="container">
+    
+
       % if client_leases:
+        <div class="row">
           % for key, values in client_leases.items():
-          <div class="row">
             <div class="col-lg-4 mb-4">
               <div class="card h-100">
-                <h4 class="card-header">${key}</h4>
+                <h5 class="card-header">${key}</h5>
                 <div class="card-body">
                   % for element in values:
-                  <p class="card-text">${element}</p>
+                  <p><strong>IP Address</strong></p>
+                  <p class="card-text">${element['ip_address']}</p>
+                  <p><strong>Expiration</strong></p>
+                  <p class="card-text">${element['expiration']}</p>
+                  <hr/>
                   % endfor
                 </div>
                 <div class="card-footer">
-                  <input class="form-control form-control-sm" type="text" placeholder="IP Address"> <a href="#" class="btn btn-primary">Set Active</a> <a href="#" class="btn btn-primary">Create New</a>
+                  <a href="#" class="btn btn-primary">Set Active</a> <a href="#" class="btn btn-primary">Create New</a>
                 </div>
               </div>
             </div>
             % endfor
+        </div>
+
     % else:
       <div class="row mb-4">
         <div class="col-md-8">
@@ -55,7 +68,7 @@
       <!-- /.row -->
 
       <!-- Portfolio Section
-      <h2>Activity</h2>
+
       for key, values in client_activity:
       <div class="row">
         <div class="col-lg-4 col-sm-6 portfolio-item">
@@ -71,7 +84,7 @@
         </div>
         endfor
         -->
-
+      <hr>
       <!-- /.row -->
 
       <!-- Call to Action Section -->
