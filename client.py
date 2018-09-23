@@ -3,6 +3,7 @@
 import requests
 import subprocess
 import sys
+import time
 
 
 def get_device_id():
@@ -37,7 +38,7 @@ class Client(object):
             # Server down? Oh well.
             pass
             
-    def recv(self, queue):
+    def recv(self):
         while 1:
             fields = {"client_id": self.client_id}
             request = requests.Request(

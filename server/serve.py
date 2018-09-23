@@ -1,6 +1,7 @@
 import os
 import cherrypy
 import simplejson
+import time
 
 from libs import moments
 from libs import utils
@@ -9,6 +10,7 @@ from mako.template import Template
 
 
 class Root(object):
+    actions = {}
     client_leases = {}
 
     @cherrypy.expose
@@ -30,6 +32,38 @@ class Root(object):
             self.client_leases[client_id] = utils.dedup_dict_list(
                 body[client_id][:]
             )
+            if client_id not in self.actions:
+                self.actions[client_id] = {}
+
+    @cherrypy.expose
+    def send_event(self):
+        cl = cherrypy.request.headers["Content-Length"]
+        rawbody = cherrypy.request.body.read(int(cl))
+        body = simplejson.loads(rawbody)
+        client_id = body["client_id"]
+        action = body["action"]
+        self.actions[client_id] = {"event":{"action": "", "value": ""}}
+        if action is "set" and "value" not in body:
+            # Set action requires input
+            return
+        else:
+            value = body["value"]
+            self.actions[client_id]["event"]["value"] = value
+        self.actions[client_id]["event"]["action"] = action
+    
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def listen(self):
+        cl = cherrypy.request.headers["Content-Length"]
+        rawbody = cherrypy.request.body.read(int(cl))
+        body = simplejson.loads(rawbody)
+        client_id = body["client_id"]
+        if client_id in self.actions:
+            if "event" in self.actions[client_id]:
+                if len(self.actions[client_id]["event"]):
+                    event = self.actions[client_id].copy()
+                    self.actions[client_id]["event"] = {}
+                    return event
 
     @cherrypy.expose
     def index(self):
