@@ -34,6 +34,7 @@ class Root(object):
             )
             if client_id not in self.actions:
                 self.actions[client_id] = {}
+        return "success"
 
     @cherrypy.expose
     def send_event(self):
@@ -50,6 +51,7 @@ class Root(object):
             value = body["value"]
             self.actions[client_id]["event"]["value"] = value
         self.actions[client_id]["event"]["action"] = action
+        return "success"
     
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -79,11 +81,9 @@ cherrypy.config.update(
         "tools.encode.encoding": "utf-8",
     }
 )
-conf = {
-    "/": {"tools.staticdir.root": os.path.abspath(os.getcwd())},
-    "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
-}
+#conf = {
+#    "/": {"tools.staticdir.root": os.path.abspath(os.getcwd())},
+#    "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
+#}
 if __name__ == "__main__":
-    cherrypy.tree.mount(Root(), "/", conf)
-    cherrypy.engine.start()
-    cherrypy.engine.block()
+    cherrypy.quickstart(Root(), "/")
