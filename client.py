@@ -9,13 +9,10 @@ import protocol
 
 
 def get_device_id():
-    if sys.platform == "win32":
-        output = ssubprocess.check_output(
-            "dmidecode.exe -s system-uuid".split()
-        ).decode("ascii")
-    else:
-        output = "CLIENT6"
-    return output
+    output = subprocess.check_output(
+        "wmic csproduct get uuid".split()
+    ).decode("ascii")
+    return output.split("\n")[1][:8]
 
 
 changer = protocol.IPChanger()
