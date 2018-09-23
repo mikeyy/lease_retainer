@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# really macOS, are these files necessary?
+.DS_Store

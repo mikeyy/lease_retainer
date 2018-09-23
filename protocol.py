@@ -38,7 +38,9 @@ class IPChanger(object):
             finally:
                 time.sleep(3)
         else:
-            print(f"Command `{cmd}` didn't execute successfully after 30 attempts")
+            print(
+                f"Command `{cmd}` didn't execute successfully after 30 attempts"
+            )
 
     def get_mac_info(self):
         # MAC ID:     021C420EEA2E
@@ -59,8 +61,12 @@ class IPChanger(object):
         cmd = "ipchanger newip"
         self.run_command(cmd)
 
-    def set_previous_address(self, address):
+    def set_existing_address(self, address):
         cmd = f"ipchanger load ip {address}"
+        self.run_command(cmd)
+
+    def reset(self):
+        cmd = f"ipchanger reset registry"
         self.run_command(cmd)
 
     def load_ips(self):
@@ -89,12 +95,13 @@ class IPChanger(object):
         self._save_cache(dedup)"""
 
     def _load_cache(self):
-        with open('.cache', 'rb') as handle:
+        with open(".cache", "rb") as handle:
             return pickle.load(handle)
-    
+
     def _save_cache(self, cache):
-        with open('.cache', 'wb') as handle:
+        with open(".cache", "wb") as handle:
             pickle.dump(cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 mac_show_debug = """MAC ID:     021C420EEA2E
 IP Address: 76.170.255.59"""
