@@ -91,7 +91,7 @@ def dedup_dict_list(key, dicts):
     x, y = dicts
     z = []
     for a in y:
-        if a['ip_address'] not in [b['ip_address'] for b in x]:
+        if a["ip_address"] not in [b["ip_address"] for b in x]:
             z.append(a)
     return z
 

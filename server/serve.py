@@ -43,7 +43,7 @@ class Root(object):
         body = simplejson.loads(rawbody)
         client_id = body["client_id"]
         action = body["action"]
-        self.actions[client_id] = {"event":{"action": "", "value": ""}}
+        self.actions[client_id] = {"event": {"action": "", "value": ""}}
         if action is "set" and "value" not in body:
             # Set action requires input
             return
@@ -52,7 +52,7 @@ class Root(object):
             self.actions[client_id]["event"]["value"] = value
         self.actions[client_id]["event"]["action"] = action
         return "success"
-    
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def listen(self):
@@ -81,9 +81,9 @@ cherrypy.config.update(
         "tools.encode.encoding": "utf-8",
     }
 )
-#conf = {
+# conf = {
 #    "/": {"tools.staticdir.root": os.path.abspath(os.getcwd())},
 #    "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
-#}
+# }
 if __name__ == "__main__":
     cherrypy.quickstart(Root(), "/")
