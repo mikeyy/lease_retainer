@@ -29,7 +29,8 @@ filename = "ips.txt"
 gain = 30
 # Server to send client details to
 # server = "adwerdz.com"
-server = "127.0.0.1:8080"
+server = "127.0.0.1:9999"
+_client = client.Client(server=server)
 # How many seconds to update host with client information
 update_delay = 15
 
@@ -41,7 +42,7 @@ disabled = []
 
 
 def handle_file(output):
-    return [line.split('|')[0] if '|' in line else line for line in output]
+    return [line.split("|")[0] if "|" in line else line for line in output]
 
 
 def spawn_timer(data):
@@ -64,9 +65,7 @@ def spawn_timer(data):
     expiration = data["expiration"]
     address = data["ip_address"]
     until = get_seconds_until(expiration, gain=gain)
-    _timer = timer.SetTimer(
-        stopped, until, data, timer_queue, timer_lock
-    )
+    _timer = timer.SetTimer(stopped, until, data, timer_queue, timer_lock)
     _timer.start()
     active_timers[address] = {"signal": stopped, "timer": _timer}
 
@@ -103,11 +102,16 @@ def monitor_timer_changes(queue):
 
 
 def update_host(server):
-    _client = client.Client(server=server)
     while 1:
         changer_data = changer.load_ips()
         _client.update(changer_data=changer_data)
         time.sleep(update_delay)
+
+
+def recive_events():
+    while 1:
+        event = _client.recv()
+        time.sleep(0.1)
 
 
 def main(changer):
@@ -115,14 +119,14 @@ def main(changer):
     with open(filename, "r") as f:
         to_monitor = handle_file(f.read().splitlines())
     for output in changer.load_ips():
-        address = output["ip_address"]
-        if address in to_monitor and address not in already_set:
-            already_set.append(address)
-            spawn_timer(output)
+       address = output["ip_address"]
+       if address in to_monitor and address not in already_set:
+           already_set.append(address)
+           spawn_timer(output)
     Thread(target=monitor_file_changes, args=(filename,)).start()
     Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
-    # Not ready yet!
-    # Thread(target=update_host, args=(server,)).start()
+    Thread(target=update_host, args=(server,)).start()
+    Thread(target=recive_events).start()
 
 
 if __name__ == "__main__":
