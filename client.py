@@ -5,6 +5,8 @@ import subprocess
 import sys
 import time
 
+import protocol
+
 
 def get_device_id():
     if sys.platform == "win32":
@@ -16,8 +18,9 @@ def get_device_id():
     return output
 
 
+changer = protocol.IPChanger()
+actions = ["set", "new", "reset"]
 
-actions = ["set","new","reset"]
 
 class Client(object):
     def __init__(self, server):
@@ -37,7 +40,7 @@ class Client(object):
         except Exception:
             # Server down? Oh well.
             pass
-            
+
     def recv(self):
         while 1:
             fields = {"client_id": self.client_id}
@@ -47,14 +50,15 @@ class Client(object):
             try:
                 resp = self.session.send(request)
                 data = resp.json()
-                if data['action'] in actions:
-                    action = data['action']
+                if data["event"]["action"] in actions:
+                    action = data["event"]["action"]
                     if action == "set":
-                        pass # TODO
+                        value = data["event"]["value"]
+                        changer.set_existing_address(value)
                     if action == "new":
-                        pass # TODO
+                        changer.set_new_address()
                     if action == "reset":
-                        pass # TODO
+                        changer.reset()
             except Exception:
                 # In check-up mode, tolerant delay advised.
                 time.sleep(3)
