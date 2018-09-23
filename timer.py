@@ -12,6 +12,7 @@ from utils import get_seconds_until, in_datetime
 from threading import Thread
 
 parser = parse.CommandParser
+changer = protocol.IPChanger()
 
 
 class SetTimer(Thread):
@@ -43,7 +44,6 @@ class SetTimer(Thread):
         return old_original != new_original and old_original != new_deltad
 
     def _retain_address(self, target, old_expiration):
-        changer = protocol.IPChanger()
         current = changer.current_address()
         if target == current:
             print(f"Address `{current}` is set to expire but active already!")
@@ -51,13 +51,15 @@ class SetTimer(Thread):
         print(
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
-        changer.set_previous_address(target)
+        changer.set_existing_address(target)
         # No need retry here, retries are in protocol.IPChanger
         if changer.current_address() == target:
             print(f"Address `{target}` acquired successfully")
         else:
-            print(f"Reacquiring previous address `{current}`")
-            changer.set_previous_address(current)
+            print(
+                f"Possible Failure: Reacquiring previous address `{current}`"
+            )
+            changer.set_existing_address(current)
             self.queue.put(target)
             return
         for i in range(30):
@@ -75,5 +77,5 @@ class SetTimer(Thread):
                 f"Lease for `{target}` didn't update after 30 checks, moving on..."
             )
         print(f"Reacquiring previous address `{current}`")
-        changer.set_previous_address(current)
+        changer.set_existing_address(current)
         self.queue.put(target)
