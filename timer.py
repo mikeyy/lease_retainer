@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parse
+import parser
 import protocol
 
 from run import active_timers
@@ -11,7 +11,7 @@ from utils import get_seconds_until, in_datetime
 
 from threading import Thread
 
-parser = parse.CommandParser
+parse = parser.CommandParser
 changer = protocol.IPChanger()
 
 
@@ -63,8 +63,10 @@ class SetTimer(Thread):
                         new_expiration = result.interface["expiration"]
                     except (IndexError, KeyError):
                         continue
-                    if self._expiration_comparison(old_expiration, new_expiration):
-                        print(f"Expiration cleared, new expiration `{new_expiration}`")
+                    if self._expiration_comparison(
+                        old_expiration, new_expiration):
+                        print(
+                            f"Expiration cleared, new expiration `{new_expiration}`")
                         break
                 break
         else:
