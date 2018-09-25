@@ -14,7 +14,7 @@ new timer is created according to the new expiring lease date.
 
 import time
 
-import parse
+import parser
 import protocol
 import timer
 import client
@@ -42,7 +42,8 @@ disabled = []
 
 
 def handle_file(output):
-    return [line.split("|")[0] if "|" in line else line for line in output]
+    # [address, nickname]
+    return [line.split("|") if "|" in line else line for line in output]
 
 
 def spawn_timer(data):
@@ -75,22 +76,22 @@ def monitor_file_changes(filename):
         with open(filename, "r") as f:
             to_monitor = handle_file(f.read().splitlines())
 
-        removals = [data for data in active_timers if data not in to_monitor]
+        removals = [
+            data for data in active_timers if data not in to_monitor[0]]
         additions = [
-            address for address in to_monitor if address not in active_timers
+            address for address in to_monitor[0]
+            if address not in active_timers
         ]
         if removals:
             for address in removals:
                 if address in active_timers:
                     active_timers[address]["signal"].set()
                     del active_timers[address]
-
         if additions:
             for address in additions:
                 if address:
                     if address not in disabled:
                         spawn_timer(address)
-
         time.sleep(1)
 
 
@@ -102,11 +103,14 @@ def monitor_timer_changes(queue):
 
 
 def update_host(server):
+    previous_data = None
     while 1:
         changer_data = changer.load_ips()
-        _client.update(changer_data=changer_data)
-        time.sleep(update_delay)
-
+        if changer_data is not previous_data:
+            _client.update(changer_data=changer_data)
+            time.sleep(update_delay)
+            previous_data = changer_data
+    
 
 def recive_events():
     while 1:
