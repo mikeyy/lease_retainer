@@ -16,7 +16,7 @@ class CommandParser(object):
 
     def __init__(self):
         self._interfaces = {}
-        self._parse()
+        self.parse()
 
     def get_ipconfig(self):
         result = subprocess.check_output(
@@ -31,7 +31,7 @@ class CommandParser(object):
         self._interfaces[device_name] = {}
         self._interfaces[device_name]["device"] = device_name
 
-    def _parse(self):
+    def parse(self):
         result = self.get_ipconfig()
         if result:
             this = None

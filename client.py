@@ -5,7 +5,6 @@ import subprocess
 import sys
 import time
 
-import parser
 import protocol
 
 
@@ -21,7 +20,6 @@ def get_city():
         time.sleep(1)
 
 
-parse = parser.CommandParser
 changer = protocol.IPChanger()
 actions = ["set", "new", "reset"]
 
