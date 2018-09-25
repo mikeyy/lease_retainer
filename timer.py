@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parser
+import parse as parser
 import protocol
 
 from run import active_timers
@@ -11,7 +11,7 @@ from utils import get_seconds_until, in_datetime
 
 from threading import Thread
 
-parse = parser.Commandparse()
+parse = parser.CommandParser
 changer = protocol.IPChanger()
 
 
@@ -54,12 +54,12 @@ class SetTimer(Thread):
         changer.set_existing_address(target)
         for i in range(30):
             time.sleep(1)
-            result = parse()()
+            result = parse()
             if result.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully")
                 for i in range(30):
                     try:
-                        result = parse()()
+                        result = parse()
                         new_expiration = result.interface["expiration"]
                     except (IndexError, KeyError):
                         continue

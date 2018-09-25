@@ -8,12 +8,12 @@ import time
 import protocol
 
 
-def get_city():
+def get_location():
     while 1:
         try:
-            resp = requests.get("http://ip-api.com/json")
+            resp = requests.get("https://ipapi.co/json/")
             data = resp.json()
-            return data["city"]
+            return f"{data['city']}, {data['region_code']}"
         except Exception:
             # Server down? Oh well.
             pass
@@ -26,7 +26,7 @@ actions = ["set", "new", "reset"]
 
 class Client(object):
     def __init__(self, server):
-        self.client_id = get_city()
+        self.client_id = get_location()
         self.server = server
         self.session = requests.Session()
 

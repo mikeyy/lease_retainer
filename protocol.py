@@ -33,8 +33,8 @@ class IPChanger(object):
         for i in range(30):
             try:
                 return subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError:
-                print(f"Command `{cmd}` command exited with non-zero code")
+            except Exception as e:
+                print(f"Command `{cmd}` command failed to execute successfully.")
             finally:
                 time.sleep(3)
         else:
