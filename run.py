@@ -13,8 +13,6 @@ new timer is created according to the new expiring lease date.
 
 
 import time
-
-import parser
 import protocol
 import timer
 import client
