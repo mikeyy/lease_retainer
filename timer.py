@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parse()
+import parser
 import protocol
 
 from run import active_timers
@@ -11,7 +11,7 @@ from utils import get_seconds_until, in_datetime
 
 from threading import Thread
 
-parse = parse().Commandparse()
+parse = parser.Commandparse()
 changer = protocol.IPChanger()
 
 
