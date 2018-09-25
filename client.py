@@ -5,23 +5,30 @@ import subprocess
 import sys
 import time
 
+import parser
 import protocol
 
 
-def get_device_id():
-    output = subprocess.check_output(
-        "wmic csproduct get uuid".split()
-    ).decode("ascii")
-    return output.split("\n")[1][:8]
+def get_city():
+    while 1:
+        try:
+            resp = requests.get("http://ip-api.com/json")
+            data = resp.json()
+            return data["city"]
+        except Exception:
+            # Server down? Oh well.
+            pass
+        time.sleep(1)
 
 
+parse = parser.CommandParser
 changer = protocol.IPChanger()
 actions = ["set", "new", "reset"]
 
 
 class Client(object):
     def __init__(self, server):
-        self.client_id = get_device_id()
+        self.client_id = get_city()
         self.server = server
         self.session = requests.Session()
 
