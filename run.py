@@ -27,7 +27,7 @@ filename = "ips.txt"
 gain = 30
 # Server to send client details to
 # server = "adwerdz.com"
-server = "127.0.0.1:9999"
+server = "adwerdz.com:9999"
 _client = client.Client(server=server)
 # How many seconds to update host with client information
 update_delay = 15
