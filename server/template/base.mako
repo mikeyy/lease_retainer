@@ -56,24 +56,24 @@
       % if client_leases:
         <div class="row">
           % for key, values in client_leases.items():
-            <div class="col-sm-4 mb-4">
+            <div class="col-sm-4 mb-5">
               <div class="card h-100">
-                <h5 class="card-header">${key}</h5>
-                <div class="card-body" >
+                <h5 class="card-header">Client: ${key}</h5>
+                <div class="card-body">
                   <div class="table-responsive">          
-                    <table class="table">
+                    <table class="table small">
                       <thead>
                         <tr>
-                          <th>#</th>
-                          <th>IP Address</th>
-                          <th>Expiration</th>
+                          <th>Nickname</th>
+                          <th>Address</th>
+                          <th>Expires</th>
                         </tr>
                       </thead>
                       <tbody>
                         % for element in values:
                           <tbody>
                             <tr>
-                              <td>${values.index(element)}</td>
+                              <td>${element['nickname']}</td>
                               <td>${element['ip_address']}</td>
                               <td>${element['expiration']}</td>
                             </tr>
@@ -90,8 +90,9 @@
                     <ul class="dropdown-menu">
                       % for element in values:
                         <li><a href="javascript:send_event('${key}', 'set', '${element["ip_address"]}')">${element["ip_address"]}</a></li>
-                      % endfor  
+                      % endfor
                     </ul>
+                    <button type="button btn-md" class="btn btn-primary" onclick="send_event('${key}', 'new')">New Address</button>
                   </div>
                 </div>
               </div>
@@ -133,10 +134,10 @@
       <div class="row mb-4">
         <div class="col-md-8">
           <p>Reset Clients</p>
-          <p><small><b>WARNING</b> This will reset ALL clients and all non-active leases are removed.</small></p>
+          <p class="text-danger"><small><b>WARNING</b> This will reset ALL clients and all non-active leases are removed.</small></p>
         </div>
         <div class="col-md-4">
-          <a class="btn btn-lg btn-secondary btn-block" href="#">Reset All</a>
+          <a class="btn btn-lg btn-secondary btn-block" href="javascript:send_event('reset')">Reset All</a>
         </div>
       </div>
 

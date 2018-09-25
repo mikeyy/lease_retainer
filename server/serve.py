@@ -19,7 +19,8 @@ class Root(object):
         rawbody = cherrypy.request.body.read(int(cl))
         body = simplejson.loads(rawbody)
         for key, value in body.items():
-            for lease in value:
+            for nickname, lease in value:
+                lease["nickname"] = nickname
                 lease["expiration"] = moments.date(
                     utils.in_datetime(lease["expiration"])
                 )
@@ -86,4 +87,5 @@ cherrypy.config.update(
 #    "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
 # }
 if __name__ == "__main__":
+    cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.quickstart(Root(), "/")
