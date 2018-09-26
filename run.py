@@ -121,10 +121,10 @@ def update_host(server):
             ))
             lease["nickname"] = nickname
             named_lease.append(lease)
-        if will_watch is not previous_data:
-            _client.update(changer_data=output)
+        if named_lease is not previous_data:
+            _client.update(changer_data=named_lease)
             time.sleep(update_delay)
-            previous_data = will_watch
+            previous_data = named_lease
 
 
 def recive_events():
