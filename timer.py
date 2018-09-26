@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parse as parser/˘
+import parse as parser
 import protocol
 
 from run import active_timers
