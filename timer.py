@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parse as parser
+import parse as parser/˘
 import protocol
 
 from run import active_timers
@@ -55,6 +55,8 @@ class SetTimer(Thread):
         for i in range(30):
             time.sleep(1)
             result = parse()
+            while "ip_address" not in result.interface:
+                time.sleep(1)
             if result.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully")
                 for i in range(30):

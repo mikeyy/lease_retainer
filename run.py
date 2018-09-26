@@ -100,18 +100,32 @@ def monitor_timer_changes(queue):
 
 
 def update_host(server):
+    def check(elem, lease):
+        ip_address = elem.split('|')[0] if '|' in elem else elem
+        return lease["ip_address"] == ip_address
+    
     previous_data = None
     while 1:
-        changer_data = changer.load_ips()
-        watching = [
-            line.split("|") if "|" in line else (line ,None)
-            for line in changer_data
-        ]
-        if changer_data is not previous_data:
-            _client.update(changer_data=changer_data)
+        with open(filename, "r") as f:
+            file_data = f.read().splitlines()
+        output = changer.load_ips()
+        white_list = [elem.split('|')[0] if '|' in elem else elem for elem in file_data]
+        active_lease = [
+            lease for lease in output if lease["ip_address"] in white_list]
+        named_lease = []
+        for lease in active_lease:
+            nickname = next(iter(
+                (elem.split('|')[1] if '|' in elem else None)
+                for elem in file_data
+                if check(elem, lease)
+            ))
+            lease["nickname"] = nickname
+            named_lease.append(lease)
+        if will_watch is not previous_data:
+            _client.update(changer_data=output)
             time.sleep(update_delay)
-            previous_data = changer_data
-    
+            previous_data = will_watch
+
 
 def recive_events():
     while 1:
@@ -128,10 +142,13 @@ def main(changer):
        if address in to_monitor and address not in already_set:
            already_set.append(address)
            spawn_timer(output)
-    Thread(target=monitor_file_changes, args=(filename,)).start()
-    Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
-    Thread(target=update_host, args=(server,)).start()
-    Thread(target=recive_events).start()
+    try:
+        Thread(target=monitor_file_changes, args=(filename,)).start()
+        Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
+        Thread(target=update_host, args=(server,)).start()
+        Thread(target=recive_events).start()
+    except KeyboardInterrupt:
+        raise e
 
 
 if __name__ == "__main__":

@@ -81,7 +81,7 @@ class IPChanger(object):
                 if not m:
                     continue
                 groupdict = m.groupdict()
-                _cache.append(groupdict)
+                #_cache.append(groupdict)
                 yield groupdict
         """
         try:
