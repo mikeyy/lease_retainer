@@ -56,6 +56,7 @@ class SetTimer(Thread):
             while 1:
                 result = parse()
                 if "ip_address" in result.interface:
+                    break
                 time.sleep(1)
             if result.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully")
