@@ -1,5 +1,6 @@
-import os
 import cherrypy
+import functools
+import os
 import simplejson
 import time
 
@@ -8,10 +9,23 @@ from libs import utils
 
 from mako.template import Template
 
+def auth_from_remote(func):
+    @functools.wraps(func)
+    def _auth_from_remote(*args, **kwargs):
+        with open('allow.txt') as f:
+            whitelist = f.readlines()
+        if cherrypy.request.remote.ip not in [
+            remote.strip('\n') for remote in whitelist]:
+            return "You shall not pass."
+        else:
+            return func(*args, **kwargs)
+    return _auth_from_remote
+
 
 class Root(object):
     actions = {}
     client_leases = {}
+    
 
     @cherrypy.expose
     def update(self):
@@ -19,8 +33,9 @@ class Root(object):
         rawbody = cherrypy.request.body.read(int(cl))
         body = simplejson.loads(rawbody)
         for key, value in body.items():
-            for nickname, lease in value:
-                lease["nickname"] = nickname
+            for lease in value:
+                if "nickname" not in lease:
+                    lease["nickname"] = None
                 lease["expiration"] = moments.date(
                     utils.in_datetime(lease["expiration"])
                 )
@@ -38,6 +53,7 @@ class Root(object):
         return "success"
 
     @cherrypy.expose
+    @auth_from_remote
     def send_event(self):
         cl = cherrypy.request.headers["Content-Length"]
         rawbody = cherrypy.request.body.read(int(cl))
@@ -69,6 +85,7 @@ class Root(object):
                     return event
 
     @cherrypy.expose
+    @auth_from_remote
     def index(self):
         data = {"client_leases": self.client_leases.copy()}
         mytemplate = Template(filename="template/base.mako")
@@ -82,10 +99,7 @@ cherrypy.config.update(
         "tools.encode.encoding": "utf-8",
     }
 )
-# conf = {
-#    "/": {"tools.staticdir.root": os.path.abspath(os.getcwd())},
-#    "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
-# }
+cherrypy.tools.authenticate = cherrypy.Tool('before_handler', auth_from_remote)
 if __name__ == "__main__":
     cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.quickstart(Root(), "/")
