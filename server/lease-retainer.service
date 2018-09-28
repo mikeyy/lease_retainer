@@ -1,0 +1,13 @@
+[Unit]
+Description=Lease Retainer HTTP Server
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+ExecStart=/bin/bash /root/server/autorun.sh
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/server
+Restart=on-failure
