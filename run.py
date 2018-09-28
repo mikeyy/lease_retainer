@@ -13,8 +13,6 @@ new timer is created according to the new expiring lease date.
 
 
 import time
-
-import parse
 import protocol
 import timer
 import client
@@ -29,7 +27,7 @@ filename = "ips.txt"
 gain = 30
 # Server to send client details to
 # server = "adwerdz.com"
-server = "127.0.0.1:9999"
+server = "adwerdz.com:9999"
 _client = client.Client(server=server)
 # How many seconds to update host with client information
 update_delay = 15
@@ -102,10 +100,31 @@ def monitor_timer_changes(queue):
 
 
 def update_host(server):
+    def check(elem, lease):
+        ip_address = elem.split('|')[0] if '|' in elem else elem
+        return lease["ip_address"] == ip_address
+    
+    previous_data = None
     while 1:
-        changer_data = changer.load_ips()
-        _client.update(changer_data=changer_data)
-        time.sleep(update_delay)
+        with open(filename, "r") as f:
+            file_data = f.read().splitlines()
+        output = changer.load_ips()
+        white_list = [elem.split('|')[0] if '|' in elem else elem for elem in file_data]
+        active_lease = [
+            lease for lease in output if lease["ip_address"] in white_list]
+        named_lease = []
+        for lease in active_lease:
+            nickname = next(iter(
+                (elem.split('|')[1] if '|' in elem else None)
+                for elem in file_data
+                if check(elem, lease)
+            ))
+            lease["nickname"] = nickname
+            named_lease.append(lease)
+        if named_lease is not previous_data:
+            _client.update(changer_data=named_lease)
+            time.sleep(update_delay)
+            previous_data = named_lease
 
 
 def recive_events():
@@ -123,10 +142,13 @@ def main(changer):
        if address in to_monitor and address not in already_set:
            already_set.append(address)
            spawn_timer(output)
-    Thread(target=monitor_file_changes, args=(filename,)).start()
-    Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
-    Thread(target=update_host, args=(server,)).start()
-    Thread(target=recive_events).start()
+    try:
+        Thread(target=monitor_file_changes, args=(filename,)).start()
+        Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
+        Thread(target=update_host, args=(server,)).start()
+        Thread(target=recive_events).start()
+    except KeyboardInterrupt:
+        raise e
 
 
 if __name__ == "__main__":

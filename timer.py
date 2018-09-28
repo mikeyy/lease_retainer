@@ -3,7 +3,7 @@
 import datetime
 import time
 
-import parse
+import parse as parser
 import protocol
 
 from run import active_timers
@@ -11,7 +11,7 @@ from utils import get_seconds_until, in_datetime
 
 from threading import Thread
 
-parser = parse.CommandParser
+parse = parser.CommandParser
 changer = protocol.IPChanger()
 
 
@@ -52,30 +52,30 @@ class SetTimer(Thread):
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
         changer.set_existing_address(target)
-        # No need retry here, retries are in protocol.IPChanger
-        if changer.current_address() == target:
-            print(f"Address `{target}` acquired successfully")
-        else:
-            print(
-                f"Possible Failure: Reacquiring previous address `{current}`"
-            )
-            changer.set_existing_address(current)
-            self.queue.put(target)
-            return
         for i in range(30):
-            time.sleep(1)
-            try:
-                result = parser()
-                new_expiration = result.interface["expiration"]
-            except (IndexError, KeyError):
-                continue
-            if self._expiration_comparison(old_expiration, new_expiration):
-                print(f"Expiration cleared, new expiration `{new_expiration}`")
+            while 1:
+                result = parse()
+                if "ip_address" in result.interface:
+                time.sleep(1)
+            if result.interface["ip_address"] == target:
+                print(f"Address `{target}` acquired successfully")
+                for i in range(30):
+                    try:
+                        result = parse()
+                        new_expiration = result.interface["expiration"]
+                    except (IndexError, KeyError):
+                        continue
+                    if self._expiration_comparison(
+                        old_expiration, new_expiration):
+                        print(
+                            f"Expiration cleared, new expiration `{new_expiration}`")
+                        break
                 break
         else:
             print(
-                f"Lease for `{target}` didn't update after 30 checks, moving on..."
+                f"NOTICE: Failed to acquire address `{target}`"
             )
-        print(f"Reacquiring previous address `{current}`")
-        changer.set_existing_address(current)
+        if result.interface["ip_address"] == current:
+            print(f"Reacquiring previous address `{current}`")
+            changer.set_existing_address(current)
         self.queue.put(target)

@@ -8,14 +8,16 @@ import time
 import protocol
 
 
-def get_device_id():
-    if sys.platform == "win32":
-        output = ssubprocess.check_output(
-            "dmidecode.exe -s system-uuid".split()
-        ).decode("ascii")
-    else:
-        output = "CLIENT6"
-    return output
+def get_location():
+    while 1:
+        try:
+            resp = requests.get("https://ipapi.co/json/")
+            data = resp.json()
+            return f"{data['city']}, {data['region_code']}"
+        except Exception:
+            # Server down? Oh well.
+            pass
+        time.sleep(1)
 
 
 changer = protocol.IPChanger()
@@ -24,14 +26,13 @@ actions = ["set", "new", "reset"]
 
 class Client(object):
     def __init__(self, server):
-        self.client_id = get_device_id()
+        self.client_id = get_location()
         self.server = server
         self.session = requests.Session()
 
     def update(self, changer_data):
-        data = [data for data in changer_data]
         fields = {self.client_id: ""}
-        fields[self.client_id] = data
+        fields[self.client_id] = changer_data
         request = requests.Request(
             method="POST", url=f"http://{self.server}/update", json=fields
         ).prepare()
