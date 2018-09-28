@@ -53,9 +53,9 @@ class SetTimer(Thread):
         )
         changer.set_existing_address(target)
         for i in range(30):
-            time.sleep(1)
-            while "ip_address" not in result.interface:
+            while 1:
                 result = parse()
+                if "ip_address" in result.interface:
                 time.sleep(1)
             if result.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully")
