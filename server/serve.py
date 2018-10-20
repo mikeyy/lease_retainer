@@ -22,6 +22,8 @@ def auth_from_remote(func):
     return _auth_from_remote
 
 
+DEAD_CLIENT_TIMEOUT = 30  # seconds
+
 class Root(object):
     actions = {}
     client_leases = {}
@@ -40,16 +42,19 @@ class Root(object):
                     utils.in_datetime(lease["expiration"])
                 )
         client_id = next(iter(body.keys()))
-        if client_id not in self.client_leases.keys():
-            self.client_leases[client_id] = utils.dedup_dict_list(
-                body[client_id]
-            )
-        else:
-            self.client_leases[client_id] = utils.dedup_dict_list(
-                body[client_id][:]
-            )
-            if client_id not in self.actions:
-                self.actions[client_id] = {}
+        client_data = utils.dedup_dict_list(
+            body[client_id]
+        )
+        if client_id:
+            self.client_leases[client_id] = {}
+            self.client_leases[client_id]["leases"] = client_data
+            if client_id not in self.client_leases.keys()\
+               and utils.check_duplicate_leases(self.client_leases, client_data):
+               self.client_leases[client_id]["leases"] = client_data
+            else:
+                if client_id not in self.actions:
+                    self.actions[client_id] = {}
+            self.client_leases[client_id]["last_active"] = time.time()
         return "success"
 
     @cherrypy.expose
@@ -61,10 +66,11 @@ class Root(object):
         client_id = body["client_id"]
         action = body["action"]
         self.actions[client_id] = {"event": {"action": "", "value": ""}}
-        if action is "set" and "value" not in body:
-            # Set action requires input
-            return
-        else:
+        if action == "set":
+            # ssz
+            if "value" not in body:
+                # Set action requires input
+                return
             value = body["value"]
             self.actions[client_id]["event"]["value"] = value
         self.actions[client_id]["event"]["action"] = action
@@ -87,6 +93,11 @@ class Root(object):
     @cherrypy.expose
     @auth_from_remote
     def index(self):
+        client_leases = self.client_leases.copy()
+        for key in client_leases.keys():
+            print(client_leases[key]["last_active"], time.time() - DEAD_CLIENT_TIMEOUT)
+            if client_leases[key]["last_active"] <= time.time() - DEAD_CLIENT_TIMEOUT:
+                del self.client_leases[key]
         data = {"client_leases": self.client_leases.copy()}
         mytemplate = Template(filename="template/base.mako")
         return mytemplate.render(**data)
