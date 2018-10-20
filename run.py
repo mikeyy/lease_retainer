@@ -43,7 +43,7 @@ def handle_file(output):
     return [line.split("|")[0] if "|" in line else line for line in output]
 
 
-def spawn_timer(data):
+def spawn_timer(data, offset=0):
     if not isinstance(data, dict):
         try:
             data = next(
@@ -63,7 +63,7 @@ def spawn_timer(data):
     expiration = data["expiration"]
     address = data["ip_address"]
     until = get_seconds_until(expiration, gain=gain)
-    _timer = timer.SetTimer(stopped, until, data, timer_queue, timer_lock)
+    _timer = timer.SetTimer(stopped, until + offset, data, timer_queue, timer_lock)
     _timer.start()
     active_timers[address] = {"signal": stopped, "timer": _timer}
 
@@ -95,7 +95,7 @@ def monitor_file_changes(filename):
 def monitor_timer_changes(queue):
     while 1:
         address = queue.get()
-        spawn_timer(address)
+        spawn_timer(address, offset=5*60)
         time.sleep(1)
 
 
