@@ -62,6 +62,6 @@ class Client(object):
                         changer.reset()
             except Exception:
                 # In check-up mode, tolerant delay advised.
-                time.sleep(3)
+                time.sleep(5)
             else:
                 time.sleep(0.1)
