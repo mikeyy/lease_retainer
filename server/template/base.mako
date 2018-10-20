@@ -70,7 +70,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        % for element in values:
+                        % for element in values["leases"]:
                           <tbody>
                             <tr>
                               <td>${element['nickname']}</td>
@@ -88,7 +88,7 @@
                     <span class="caret"></span>
                     <span class="sr-only">Toggle Dropdown</span></button>
                     <ul class="dropdown-menu">
-                      % for element in values:
+                      % for element in values["leases"]:
                         <li><a href="javascript:send_event('${key}', 'set', '${element["ip_address"]}')">${element["ip_address"]}</a></li>
                       % endfor
                     </ul>
