@@ -21,4 +21,4 @@ def dedup_dict_list(x):
 def check_duplicate_leases(active_leases, new_leases):
     for key, item in active_leases.items():
         if active_leases[key]["leases"] == new_leases:
-            return False
+            return
