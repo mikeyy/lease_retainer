@@ -7,6 +7,9 @@ import time
 
 from utils import dedup_dict_list
 
+# Ew, will fix ... 
+filename = "ips.txt"
+
 class IPChanger(object):
     """
     newip                - Gets a new ip address.
@@ -30,16 +33,15 @@ class IPChanger(object):
         return self.get_mac_info()
 
     def run_command(self, cmd):
-        for i in range(30):
+        for i in range(5):
             try:
-                return subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+                return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
             except Exception as e:
-                print(f"Command `{cmd}` command failed to execute successfully.")
-            finally:
-                time.sleep(3)
+                print(f"Command `{cmd}` command failed to execute successfully, waiting 30 seconds. Retry attempt {1+i}")
+                time.sleep(30)
         else:
             print(
-                f"Command `{cmd}` didn't execute successfully after 30 attempts"
+                f"Command `{cmd}` didn't execute successfully after 5 attempts"
             )
 
     def get_mac_info(self):
@@ -49,19 +51,53 @@ class IPChanger(object):
         result = self.run_command(cmd)
         if result is not None:
             pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
-            # Will assume there is always output
-            for line in result.decode("ascii").split("\n"):
-                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
-                if not m:
-                    continue
+            m = re.match(pattern, result.rstrip(" \t\r\n\0"))
+            if m:
                 address = m.groupdict()["ip_address"]
                 return address
 
+
+    def set_mac_address(self, address):
+        cmd = f"ipchanger mac set {address}"
+        print(cmd)
+        result = self.run_command(cmd)
+        print(result)
+        if result is not None:
+            pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
+            # Will assume there is always output
+            for line in result.split("\n"):
+                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
+                if m:
+                    address = m.groupdict()["ip_address"]
+                    break
+
+
     def set_new_address(self):
         cmd = "ipchanger newip"
-        self.run_command(cmd)
+        result = self.run_command(cmd)
+        if result is not None:
+            pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
+            # Will assume there is always output
+            for line in result:
+                m = re.match(pattern, result.rstrip(" \t\r\n\0"))
+                address = m.groupdict()["ip_address"]
+                with open(filename, "a") as f:
+                    f.write(address)
 
     def set_existing_address(self, address):
+        try:
+            data = next(
+                iter(
+                    [
+                        output
+                        for output in self.load_ips()
+                        if output["ip_address"] == address
+                    ]
+                )
+            )
+        except StopIteration:
+            print(f"Address `{address}` is non-existent!")
+            return
         cmd = f"ipchanger load ip {address}"
         self.run_command(cmd)
 
@@ -76,32 +112,35 @@ class IPChanger(object):
         result = self.run_command(cmd)
         if result is not None:
             pattern = r"^[0-9]+: \[[a-zA-Z0-9]+\], (?P<ip_address>[^\s,]+), (?P<mac_address>[ABCDEFabcdef\d-]+), Expires: .*?, (?P<expiration>[\D\d]+)"
-            for line in result.decode("ascii").split("\n"):
+            for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
                 if not m:
                     continue
                 groupdict = m.groupdict()
-                #_cache.append(groupdict)
+                _cache.append(groupdict)
                 yield groupdict
-        """
+
         try:
-            cache = self._load_cache()
+            cache = [eval(l) for l in self._load_cache() if len(l) > 2]
         except EOFError:
             cache = {}
         for output in cache:
-            yield cache
+            yield output
         dedup = dedup_dict_list(key='ip_address', dicts=(cache, _cache))
-        print(dedup)
-        self._save_cache(dedup)"""
+        self._save_cache(dedup)
 
     def _load_cache(self):
-        with open(".cache", "rb") as handle:
-            return pickle.load(handle)
+        with open("lease_cache", "r") as file:
+            data = file.readlines()
+        return data
 
     def _save_cache(self, cache):
-        with open(".cache", "wb") as handle:
-            pickle.dump(cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+        with open("lease_cache", "a") as file:
+            for elem in cache:
+                # {'ip_address': '24.175.254.240', 'mac_address': '00A7E23C2CC8', 'expiration': 'October 19, 2018  06:52:32 PM'}
+                file.write('{')
+                file.write(''.join("'{}':'{}', ".format(key, val) for key, val in elem.items()))
+                file.write('}\n')
 
 mac_show_debug = """MAC ID:     021C420EEA2E
 IP Address: 76.170.255.59"""
