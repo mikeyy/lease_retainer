@@ -59,7 +59,6 @@ class IPChanger(object):
 
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
-        print(cmd)
         result = self.run_command(cmd)
         print(result)
         if result is not None:
@@ -80,9 +79,10 @@ class IPChanger(object):
             # Will assume there is always output
             for line in result:
                 m = re.match(pattern, result.rstrip(" \t\r\n\0"))
-                address = m.groupdict()["ip_address"]
-                with open(filename, "a") as f:
-                    f.write(address)
+                if m:
+                    address = m.groupdict()["ip_address"]
+                    with open(filename, "a") as f:
+                        f.write(address)
 
     def set_existing_address(self, address):
         try:
