@@ -82,4 +82,4 @@ class SetTimer(Thread):
         if result.interface["ip_address"] == current:
             print(f"Reacquiring previous address `{current}`")
             changer.set_existing_address(current)
-        self.queue.put(target)
+        self.queue.put(target)  s
