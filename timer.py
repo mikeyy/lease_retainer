@@ -83,8 +83,6 @@ class SetTimer(Thread):
 
 
             print(f"Reacquiring previous address `{current}`")
-            changer.set_existing_address(current)
-               
+            changer.set_existing_address(current)  
 
         self.queue.put(target)
-
