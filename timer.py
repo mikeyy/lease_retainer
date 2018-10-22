@@ -44,7 +44,6 @@ class SetTimer(Thread):
         return old_original != new_original and old_original != new_deltad
 
     def _retain_address(self, target, old_expiration):
-        changer.set_mac_address(self.data["mac_address"])
         current = changer.current_address()
         if target == current:
             print(f"Address `{current}` is set to expire but active already!")
@@ -52,34 +51,40 @@ class SetTimer(Thread):
         print(
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
-        for i in range(10):
-            print(f"Trying to acquire `{target}`...")
-            changer.set_existing_address(target)
-            for i in range(10):
-                result = parse()
-                if "ip_address" in result.interface:
-                    break
-                time.sleep(1)
-
+        changer.set_existing_address(target)
+        result = parse()
+        if "ip_address" not in result.interface:
+            print(
+                f"NOTICE: Failed to acquire address `{target}`"
+            )
+            return
+            
             if result.interface["ip_address"] == target:
-                print(f"Address `{target}` acquired successfully!")
+                print(f"Address `{target}` acquired successfully")
                 for i in range(30):
                     try:
                         result = parse()
                         new_expiration = result.interface["expiration"]
                     except (IndexError, KeyError):
-                        continue
-                    if self._expiration_comparison(
-                        old_expiration, new_expiration):
-                        print(
-                            f"Expiration cleared, new expiration `{new_expiration}.`")
-                        break
-                break
-        else:
-            print(
-                f"NOTICE: Failed to acquire address `{target}`! after 10 tries"
-            )
-        if result.interface["ip_address"] == current:
+                        pass
+                    else: 
+                        if self._expiration_comparison(
+                            old_expiration, new_expiration):
+                            print(
+                                f"Expiration cleared, new expiration `{new_expiration}`")
+                            break
+                        
+                        time.sleep(1)
+                        
+                else:
+                    print(
+                        f"NOTICE: There was an issue obtaining an extended expiration for `{target}`"
+                    )
+
+
             print(f"Reacquiring previous address `{current}`")
             changer.set_existing_address(current)
+
+               
+
         self.queue.put(target)
