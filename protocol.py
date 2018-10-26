@@ -32,8 +32,8 @@ class IPChanger(object):
     def current_address(self):
         return self.get_mac_info()
 
-    def run_command(self, cmd):
-        for i in range(5):
+    def run_command(self, cmd, retry=5):
+        for i in range(retry):
             try:
                 return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
             except Exception as e:
@@ -59,7 +59,7 @@ class IPChanger(object):
 
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
-        result = self.run_command(cmd)
+        result = self.run_command(cmd, retry=1)
         print(result)
         if result is not None:
             pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
@@ -77,7 +77,7 @@ class IPChanger(object):
         if result is not None:
             pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
             # Will assume there is always output
-            for line in result:
+            for line in result.split("\n"):
                 m = re.match(pattern, result.rstrip(" \t\r\n\0"))
                 if m:
                     address = m.groupdict()["ip_address"]

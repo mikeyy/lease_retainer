@@ -62,10 +62,11 @@ def spawn_timer(data, offset=0):
     stopped = Event()
     expiration = data["expiration"]
     address = data["ip_address"]
-    until = get_seconds_until(expiration, gain=gain)
-    _timer = timer.SetTimer(stopped, until + offset, data, timer_queue, timer_lock)
-    _timer.start()
-    active_timers[address] = {"signal": stopped, "timer": _timer}
+    until = get_seconds_until(expiration, gain=gain) + offset
+    if time.time() - 24*60*60 >= until:
+        _timer = timer.SetTimer(stopped, until, data, timer_queue, timer_lock)
+        _timer.start()
+        active_timers[address] = {"signal": stopped, "timer": _timer}
 
 
 def monitor_file_changes(filename):
