@@ -55,7 +55,7 @@
 
       % if client_leases:
         <div class="row">
-          % for key, values in client_leases.items():
+          % for key, value in client_leases.items():
             <div class="col-sm-4 mb-5">
               <div class="card h-100">
                 <h5 class="card-header">Client: ${key}</h5>
@@ -70,11 +70,17 @@
                         </tr>
                       </thead>
                       <tbody>
-                        % for element in values["leases"]:
+                        % for element in value["leases"]:
                           <tbody>
                             <tr>
                               <td>${element['nickname']}</td>
-                              <td>${element['ip_address']}</td>
+                              <td>
+                                % if value["current_address"] == element['ip_address']:
+                                <b>${element['ip_address']}</b>
+                                % else:
+                                ${element['ip_address']}
+                                % endif
+                              </td>
                               <td>${element['expiration']}</td>
                             </tr>
                           </tbody>
@@ -88,7 +94,7 @@
                     <span class="caret"></span>
                     <span class="sr-only">Toggle Dropdown</span></button>
                     <ul class="dropdown-menu">
-                      % for element in values["leases"]:
+                      % for element in value["leases"]:
                         <li><a href="javascript:send_event('${key}', 'set', '${element["ip_address"]}')">${element["ip_address"]}</a></li>
                       % endfor
                     </ul>

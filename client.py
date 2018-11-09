@@ -30,8 +30,8 @@ class Client(object):
         self.server = server
         self.session = requests.Session()
 
-    def update(self, changer_data):
-        fields = {self.client_id: ""}
+    def update(self, changer_data, current_address):
+        fields = {self.client_id: "", "current_address": current_address}
         fields[self.client_id] = changer_data
         request = requests.Request(
             method="POST", url=f"http://{self.server}/update", json=fields
@@ -53,11 +53,11 @@ class Client(object):
                 data = resp.json()
                 if data["event"]["action"] in actions:
                     action = data["event"]["action"]
+                    if action == "new":
+                        changer.set_new_address()
                     if action == "set":
                         value = data["event"]["value"]
                         changer.set_existing_address(value)
-                    if action == "new":
-                        changer.set_new_address()
                     if action == "reset":
                         changer.reset()
             except Exception:

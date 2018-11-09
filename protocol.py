@@ -50,19 +50,19 @@ class IPChanger(object):
         cmd = "ipchanger mac show"
         result = self.run_command(cmd)
         if result is not None:
-            pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
-            m = re.match(pattern, result.rstrip(" \t\r\n\0"))
-            if m:
-                address = m.groupdict()["ip_address"]
-                return address
+            for line in result.split("\n"):
+                pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
+                if m:
+                    address = m.groupdict()["ip_address"]
+                    return address
 
 
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
         result = self.run_command(cmd, retry=1)
-        print(result)
         if result is not None:
-            pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
+            pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
             # Will assume there is always output
             for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
@@ -75,14 +75,14 @@ class IPChanger(object):
         cmd = "ipchanger newip"
         result = self.run_command(cmd)
         if result is not None:
-            pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
+            pattern = r"^New IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
             # Will assume there is always output
             for line in result.split("\n"):
-                m = re.match(pattern, result.rstrip(" \t\r\n\0"))
+                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
                 if m:
                     address = m.groupdict()["ip_address"]
                     with open(filename, "a") as f:
-                        f.write(address)
+                        f.write(f"\n{address}")
 
     def set_existing_address(self, address):
         try:
@@ -114,11 +114,10 @@ class IPChanger(object):
             pattern = r"^[0-9]+: \[[a-zA-Z0-9]+\], (?P<ip_address>[^\s,]+), (?P<mac_address>[ABCDEFabcdef\d-]+), Expires: .*?, (?P<expiration>[\D\d]+)"
             for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
-                if not m:
-                    continue
-                groupdict = m.groupdict()
-                _cache.append(groupdict)
-                yield groupdict
+                if m:
+                    groupdict = m.groupdict()
+                    _cache.append(groupdict)
+                    yield groupdict
 
         try:
             cache = [eval(l) for l in self._load_cache() if len(l) > 2]

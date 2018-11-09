@@ -106,26 +106,32 @@ def update_host(server):
         return lease["ip_address"] == ip_address
     
     previous_data = None
+    previous_address = None
+    current_address = changer.current_address()
     while 1:
         with open(filename, "r") as f:
             file_data = f.read().splitlines()
         output = changer.load_ips()
-        white_list = [elem.split('|')[0] if '|' in elem else elem for elem in file_data]
-        active_lease = [
-            lease for lease in output if lease["ip_address"] in white_list]
-        named_lease = []
-        for lease in active_lease:
-            nickname = next(iter(
-                (elem.split('|')[1] if '|' in elem else None)
-                for elem in file_data
-                if check(elem, lease)
-            ))
-            lease["nickname"] = nickname
-            named_lease.append(lease)
-        if named_lease is not previous_data:
-            _client.update(changer_data=named_lease)
-            time.sleep(update_delay)
-            previous_data = named_lease
+        if output or current_address is not previous_address:
+            white_list = [elem.split('|')[0] if '|' in elem else elem for elem in file_data]
+            active_lease = [
+                lease for lease in output if lease["ip_address"] in white_list]
+            named_lease = []
+            for lease in active_lease:
+                nickname = next(iter(
+                    (elem.split('|')[1] if '|' in elem else None)
+                    for elem in file_data
+                    if check(elem, lease)
+                ))
+                lease["nickname"] = nickname
+                named_lease.append(lease)
+            current_address = changer.current_address()
+            if named_lease is not previous_data:
+                _client.update(named_lease, current_address)
+                previous_data = named_lease
+                if current_address is not previous_address:
+                    previous_address = current_address
+        time.sleep(update_delay)
 
 
 def recive_events():
