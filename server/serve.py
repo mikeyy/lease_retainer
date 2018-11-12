@@ -71,7 +71,7 @@ class Root(object):
         client_id = body["client_id"]
         action = body["action"]
         self.actions[client_id] = {"event": {"action": "", "value": ""}}
-        if action == "set":
+        if action == "set" or action == "assign_nickname":
             # ssz
             if "value" not in body:
                 # Set action requires input

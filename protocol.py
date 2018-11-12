@@ -6,9 +6,8 @@ import subprocess
 import time
 
 from utils import dedup_dict_list
+from run import filename
 
-# Ew, will fix ... 
-filename = "ips.txt"
 
 class IPChanger(object):
     """

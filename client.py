@@ -7,6 +7,8 @@ import time
 
 import protocol
 
+from utils import assign_nickname
+
 
 def get_location():
     while 1:
@@ -21,7 +23,7 @@ def get_location():
 
 
 changer = protocol.IPChanger()
-actions = ["set", "new", "reset"]
+actions = ["set", "new", "reset", "assign_nickname"]
 
 
 class Client(object):
@@ -60,6 +62,10 @@ class Client(object):
                         changer.set_existing_address(value)
                     if action == "reset":
                         changer.reset()
+                    if action == "assign_nickname":
+                        address = data["event"]["value"]["address"]
+                        nickname = data["event"]["value"]["nickname"]
+                        assign_nickname(address, nickname)
             except Exception:
                 # In check-up mode, tolerant delay advised.
                 time.sleep(5)

@@ -30,7 +30,7 @@ gain = 30
 server = "adwerdz.com:9999"
 _client = client.Client(server=server)
 # How many seconds to update host with client information
-update_delay = 15
+update_delay = 5
 
 
 timer_queue = Queue()
@@ -96,7 +96,7 @@ def monitor_file_changes(filename):
 def monitor_timer_changes(queue):
     while 1:
         address = queue.get()
-        spawn_timer(address, offset=5*60)
+        spawn_timer(address, offset=30*60)
         time.sleep(1)
 
 
