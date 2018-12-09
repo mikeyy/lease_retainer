@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import requests
-import subprocess
-import sys
 import time
 
 import protocol
 
-from util import assign_nickname, remove_address
+from utils import assign_nickname, remove_address
 
 changer = protocol.IPChanger()
 actions = ["set", "new", "reset", "assign_nickname", "remove"]
