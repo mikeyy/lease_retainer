@@ -7,10 +7,10 @@ import time
 
 import protocol
 
-from utils import assign_nickname
+from util import assign_nickname, remove_address
 
 changer = protocol.IPChanger()
-actions = ["set", "new", "reset", "assign_nickname"]
+actions = ["set", "new", "reset", "assign_nickname", "remove"]
 
 
 def get_location():
@@ -54,6 +54,9 @@ class Client(object):
                 data = resp.json()
                 if data["event"]["action"] in actions:
                     action = data["event"]["action"]
+                    if action == "remove":
+                        address = data["event"]["value"]["address"]
+                        remove_address()
                     if action == "new":
                         changer.set_new_address()
                     if action == "set":

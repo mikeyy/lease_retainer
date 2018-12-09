@@ -23,6 +23,22 @@ CISCO_MAC_ADDRESS_R = re.compile(
 )
 
 
+def remove_address(address):
+    filename = "ips.txt"
+    with open(filename, "r") as f:
+        output = f.read().splitlines()
+    for i, line in enumerate(output):
+        if "|" in line:
+            a = line.split("|")[0]
+        else:
+            a = line
+        if a == address:
+            del output[i]
+            break
+    with open(filename, "w") as f:
+        f.write("\n".join(output))
+
+
 def assign_nickname(address, nickname):
     filename = "ips.txt"
     with open(filename, "r") as f:

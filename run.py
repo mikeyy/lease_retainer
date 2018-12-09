@@ -142,10 +142,10 @@ def main(changer):
     with open(filename, "r") as f:
         to_monitor = handle_file(f.read().splitlines())
     for output in changer.load_ips():
-       address = output["ip_address"]
-       if address in to_monitor and address not in already_set:
-           already_set.append(address)
-           spawn_timer(output)
+        address = output["ip_address"]
+        if address in to_monitor and address not in already_set:
+            already_set.append(address)
+            spawn_timer(output)
     try:
         Thread(target=monitor_file_changes, args=(filename,)).start()
         Thread(target=monitor_timer_changes, args=(timer_queue,)).start()

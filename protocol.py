@@ -51,7 +51,6 @@ class IPChanger(object):
                     address = m.groupdict()["ip_address"]
                     return address
 
-
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
         result = self.run_command(cmd)
@@ -63,7 +62,6 @@ class IPChanger(object):
                 if m:
                     address = m.groupdict()["ip_address"]
                     break
-
 
     def set_new_address(self):
         cmd = "ipchanger newip"
