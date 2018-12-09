@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 
-import datetime
-import time
-
 import parse as parser
 import protocol
 
-from run import active_timers
-from utils import get_seconds_until, in_datetime
+from utils import in_datetime
 
 from threading import Thread
 
@@ -38,10 +34,10 @@ class SetTimer(Thread):
             print(f"Timer shutting down for `{target}`")
 
     def _expiration_comparison(self, old, new):
-        new_deltad = in_datetime(new, delta=1)
+        new_delta = in_datetime(new, delta=1)
         new_original = in_datetime(new)
         old_original = in_datetime(old)
-        return old_original != new_original and old_original != new_deltad
+        return old_original != new_original and old_original != new_delta
 
     def _retain_address(self, target, old_expiration):
         changer.set_mac_address(self.data["mac_address"])
@@ -54,29 +50,25 @@ class SetTimer(Thread):
         )
         print(f"Trying to acquire `{target}`...")
         changer.set_existing_address(target)
-
         result = parse()
         if "ip_address" in result.interface:
             if result.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully!")
-                for i in range(5):
-                    try:
-                        result = parse()
-                        new_expiration = result.interface["expiration"]
-                    except (IndexError, KeyError):
-                        time.sleep(3)
-                        continue
-                        
+                try:
+                    result = parse()
+                    new_expiration = result.interface["expiration"]
+                except (IndexError, KeyError):
+                    pass
+                else:
                     if self._expiration_comparison(
                         old_expiration, new_expiration):
                         print(
                             f"Expiration cleared, new expiration `{new_expiration}.`")
-                        break
         else:
             print(
-                f"NOTICE: Failed to acquire address `{target}`! after 10 tries"
+                f"NOTICE: Failed to acquire address `{target}`!"
             )
-        if result.interface["ip_address"] == current:
+        if result.interface["ip_address"] != current:
             print(f"Reacquiring previous address `{current}`")
             changer.set_existing_address(current)
         self.queue.put(target)

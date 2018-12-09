@@ -9,6 +9,9 @@ import protocol
 
 from utils import assign_nickname
 
+changer = protocol.IPChanger()
+actions = ["set", "new", "reset", "assign_nickname"]
+
 
 def get_location():
     while 1:
@@ -20,10 +23,6 @@ def get_location():
             # Server down? Oh well.
             pass
         time.sleep(1)
-
-
-changer = protocol.IPChanger()
-actions = ["set", "new", "reset", "assign_nickname"]
 
 
 class Client(object):

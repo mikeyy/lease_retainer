@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
-import pickle
 import re
 import subprocess
-import time
+
+import parse as parser
 
 from utils import dedup_dict_list
-from run import filename
 
+parse = parser.CommandParser
+filename = "ips.txt"
 
 class IPChanger(object):
     """
@@ -31,17 +32,11 @@ class IPChanger(object):
     def current_address(self):
         return self.get_mac_info()
 
-    def run_command(self, cmd, retry=5):
-        for i in range(retry):
-            try:
-                return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
-            except Exception as e:
-                print(f"Command `{cmd}` command failed to execute successfully, waiting 30 seconds. Retry attempt {1+i}")
-                time.sleep(30)
-        else:
-            print(
-                f"Command `{cmd}` didn't execute successfully after 5 attempts"
-            )
+    def run_command(self, cmd):
+        try:
+            return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
+        except Exception as e:
+            print(f"Command `{cmd}` command failed to execute successfully.")
 
     def get_mac_info(self):
         # MAC ID:     021C420EEA2E
@@ -59,7 +54,7 @@ class IPChanger(object):
 
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
-        result = self.run_command(cmd, retry=1)
+        result = self.run_command(cmd)
         if result is not None:
             pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
             # Will assume there is always output
@@ -72,16 +67,12 @@ class IPChanger(object):
 
     def set_new_address(self):
         cmd = "ipchanger newip"
-        result = self.run_command(cmd)
-        if result is not None:
-            pattern = r"^New IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
-            # Will assume there is always output
-            for line in result.split("\n"):
-                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
-                if m:
-                    address = m.groupdict()["ip_address"]
-                    with open(filename, "a") as f:
-                        f.write(f"\n{address}")
+        self.run_command(cmd)
+        result = parse()
+        if "ip_address" in result.interface:
+            address = result.interface["ip_address"]
+            with open(filename, "a") as f:
+                f.write(f"\n{address}")
 
     def set_existing_address(self, address):
         try:

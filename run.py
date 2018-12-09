@@ -2,14 +2,12 @@
 
 """
 The purpose of this script is to ensure an expiring lease retains it's current
-IP address. This is achieved by acquiring the expiring lease date and MAC 
+IP address. This is achieved by acquiring the expiring lease date and MAC
 address for the NIC. A timer is then created for executing the necessary
 commands to set the MAC address of the NIC to match the momentarily expiring
 NIC. The previous MAC address is reacquired once the lease has expired, and a
 new timer is created according to the new expiring lease date.
 """
-
-# TODO Recheck gain in utils.get_seconds_until
 
 
 import time
@@ -29,9 +27,8 @@ gain = 30
 # server = "adwerdz.com"
 server = "adwerdz.com:9999"
 _client = client.Client(server=server)
-# How many seconds to update host with client information
-update_delay = 5
-
+# Seconds interval to update host with client information
+update_delay = 1
 
 timer_queue = Queue()
 timer_lock = Lock()
@@ -104,7 +101,7 @@ def update_host(server):
     def check(elem, lease):
         ip_address = elem.split('|')[0] if '|' in elem else elem
         return lease["ip_address"] == ip_address
-    
+
     previous_data = None
     previous_address = None
     current_address = changer.current_address()
