@@ -53,8 +53,8 @@ class Client(object):
                 if data["event"]["action"] in actions:
                     action = data["event"]["action"]
                     if action == "remove":
-                        address = data["event"]["value"]["address"]
-                        remove_address()
+                        address = data["event"]["value"]
+                        remove_address(address)
                     if action == "new":
                         changer.set_new_address()
                     if action == "set":

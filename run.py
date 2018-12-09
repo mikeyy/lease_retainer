@@ -28,7 +28,7 @@ gain = 30
 server = "adwerdz.com:9999"
 _client = client.Client(server=server)
 # Seconds interval to update host with client information
-update_delay = 1
+update_delay = 15
 
 timer_queue = Queue()
 timer_lock = Lock()
@@ -151,7 +151,7 @@ def main(changer):
         Thread(target=monitor_timer_changes, args=(timer_queue,)).start()
         Thread(target=update_host, args=(server,)).start()
         Thread(target=recive_events).start()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         raise e
 
 

@@ -5,7 +5,7 @@ import random
 import time
 import datetime
 
-
+filename = "ips.txt"
 MAC_ADDRESS_R = re.compile(
     r"""
     ([0-9A-F]{1,2})[:-]?
@@ -24,7 +24,6 @@ CISCO_MAC_ADDRESS_R = re.compile(
 
 
 def remove_address(address):
-    filename = "ips.txt"
     with open(filename, "r") as f:
         output = f.read().splitlines()
     for i, line in enumerate(output):
@@ -40,7 +39,6 @@ def remove_address(address):
 
 
 def assign_nickname(address, nickname):
-    filename = "ips.txt"
     with open(filename, "r") as f:
         output = f.read().splitlines()
     for i, line in enumerate(output):
