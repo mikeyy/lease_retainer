@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
+import datetime
 import re
 import random
 import time
-import datetime
+
+import parse
 
 from pytz import timezone
 
+parser = parse.CommandParser
 filename = "ips.txt"
+
 MAC_ADDRESS_R = re.compile(
     r"""
     ([0-9A-F]{1,2})[:-]?
@@ -23,6 +27,16 @@ MAC_ADDRESS_R = re.compile(
 CISCO_MAC_ADDRESS_R = re.compile(
     r"([0-9A-F]{,4})\.([0-9A-F]{,4})\.([0-9A-F]{,4})", re.I
 )
+
+
+def get_interface_details():
+    while 1:
+        result = parser()
+        if hasattr(result, "interface"):
+            if "ip_address" in result.interface:
+                break
+        time.sleep(1)
+    return result.interface
 
 
 def remove_address(address):

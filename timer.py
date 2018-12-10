@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-import parse
 import protocol
 
-from utils import in_datetime
+from utils import in_datetime, get_interface_details
 
 from threading import Thread
 
 changer = protocol.IPChanger()
-parser = parse.CommandParser()
 
 class SetTimer(Thread):
     def __init__(self, stopped, duration, data, queue, lock):
@@ -39,8 +37,8 @@ class SetTimer(Thread):
         return old_original != new_original and old_original != new_delta
 
     def _retain_address(self, target, old_expiration):
-        changer.set_mac_address(self.data["mac_address"])
-        current = changer.current_address()
+        result = get_interface_details()
+        current = result["ip_address"]
         if target == current:
             print(f"Address `{current}` is set to expire but active already!")
             return
@@ -48,27 +46,24 @@ class SetTimer(Thread):
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
         print(f"Trying to acquire `{target}`...")
-        changer.set_existing_address(target)
-        parser.parse()
-        if "ip_address" in parser.interface:
-            if parser.interface["ip_address"] == target:
-                print(f"Address `{target}` acquired successfully!")
-                try:
-                    parser.parse()
-                    new_expiration = parser.interface["expiration"]
-                except (IndexError, KeyError):
-                    pass
-                else:
-                    if self._expiration_comparison(
-                        old_expiration, new_expiration):
-                        print(
-                            f"Expiration cleared, new expiration `{new_expiration}.`")
+        changer.set_mac_address(self.data["mac_address"])
+        result = get_interface_details()
+        if result["ip_address"] == target:
+            print(f"Address `{target}` acquired successfully!")
+            try:
+                new_expiration = result["expiration"]
+            except (IndexError, KeyError):
+                pass
+            else:
+                if self._expiration_comparison(
+                    old_expiration, new_expiration):
+                    print(
+                        f"Expiration cleared, new expiration `{new_expiration}.`")
         else:
             print(
                 f"NOTICE: Failed to acquire address `{target}`!"
             )
-        if "ip_address" in parser.interface:
-            if parser.interface["ip_address"] != current:
-                print(f"Reacquiring previous address `{current}`")
-                changer.set_existing_address(current)
+        if result["ip_address"] != current:
+            print(f"Reacquiring previous address `{current}`")
+            changer.set_existing_address(current)
         self.queue.put(target)

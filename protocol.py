@@ -4,11 +4,8 @@
 import re
 import subprocess
 
-import parse as parser
+from utils import dedup_dict_list, get_interface_details
 
-from utils import dedup_dict_list
-
-parse = parser.CommandParser
 filename = "ips.txt"
 
 class IPChanger(object):
@@ -67,15 +64,14 @@ class IPChanger(object):
     def set_new_address(self):
         cmd = "ipchanger newip"
         self.run_command(cmd)
-        result = parse()
-        if "ip_address" in result.interface:
-            address = result.interface["ip_address"]
-            with open(filename, "a") as f:
-                f.write(f"\n{address}")
+        result = get_interface_details()
+        address = result.interface["ip_address"]
+        with open(filename, "a") as f:
+            f.write(f"\n{address}")
 
     def set_existing_address(self, address):
         try:
-            data = next(
+            next(
                 iter(
                     [
                         output

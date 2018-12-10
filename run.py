@@ -15,9 +15,8 @@ import time
 import protocol
 import timer
 import client
-import parse
 
-from utils import get_seconds_until, in_datetime
+from utils import get_seconds_until, in_datetime, get_interface_details
 
 from queue import Queue
 from threading import Event, Thread, Lock
@@ -28,7 +27,6 @@ gain = 30
 # Server to send client details to
 # server = "adwerdz.com"
 server = "adwerdz.com:9999"
-parser = parse.CommandParser()
 _client = client.Client(server=server)
 # Seconds interval to update host with client information
 update_delay = 15
@@ -107,10 +105,9 @@ def update_host(server):
 
     previous_data = None
     previous_address = None
-    parser.parse()
-    if "ip_address" in parser.interface:
-        current_address = parser.interface["ip_address"]
     while 1:
+        result = get_interface_details()
+        current_address = result["ip_address"]
         with open(filename, "r") as f:
             file_data = f.read().splitlines()
         output = changer.load_ips()
@@ -130,10 +127,6 @@ def update_host(server):
                     lease["expiration"], convert_to_utc=True).strftime(
                         "%B %d, %Y  %I:%M:%S %p")
                 named_lease.append(lease)
-            previous_address = None
-            parser.parse()
-            if "ip_address" in parser.interface:
-                current_address = parser.interface["ip_address"]
             if named_lease is not previous_data:
                 _client.update(named_lease, current_address)
                 previous_data = named_lease
@@ -144,7 +137,7 @@ def update_host(server):
 
 def recive_events():
     while 1:
-        event = _client.recv()
+        _client.recv()
         time.sleep(0.1)
 
 

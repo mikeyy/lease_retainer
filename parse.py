@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import re
 import subprocess
 
@@ -15,6 +16,7 @@ class CommandParser(object):
 
     def __init__(self):
         self._interfaces = {}
+        self.parse()
 
     def get_ipconfig(self):
         result = subprocess.check_output(
@@ -24,9 +26,10 @@ class CommandParser(object):
             return result.decode("ascii")
 
     def add_device(self, device_name):
-        if device_name not in self._interfaces:
-            self._interfaces[device_name] = {}
-            self._interfaces[device_name]["device"] = device_name
+        if device_name in self._interfaces:
+            raise RuntimeError(f"Device {device_name} already added")
+        self._interfaces[device_name] = {}
+        self._interfaces[device_name]["device"] = device_name
 
     def parse(self):
         result = self.get_ipconfig()
