@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
-import parse as parser
+import parse
 import protocol
 
 from utils import in_datetime
 
 from threading import Thread
 
-parse = parser.CommandParser
 changer = protocol.IPChanger()
-
+parser = parse.CommandParser()
 
 class SetTimer(Thread):
     def __init__(self, stopped, duration, data, queue, lock):
@@ -50,13 +49,13 @@ class SetTimer(Thread):
         )
         print(f"Trying to acquire `{target}`...")
         changer.set_existing_address(target)
-        result = parse()
-        if "ip_address" in result.interface:
-            if result.interface["ip_address"] == target:
+        parser.parse()
+        if "ip_address" in parser.interface:
+            if parser.interface["ip_address"] == target:
                 print(f"Address `{target}` acquired successfully!")
                 try:
-                    result = parse()
-                    new_expiration = result.interface["expiration"]
+                    parser.parse()
+                    new_expiration = parse.interface["expiration"]
                 except (IndexError, KeyError):
                     pass
                 else:
@@ -68,7 +67,8 @@ class SetTimer(Thread):
             print(
                 f"NOTICE: Failed to acquire address `{target}`!"
             )
-        if result.interface["ip_address"] != current:
-            print(f"Reacquiring previous address `{current}`")
-            changer.set_existing_address(current)
+        if "ip_address" in parse.interface:
+            if parse.interface["ip_address"] != current:
+                print(f"Reacquiring previous address `{current}`")
+                changer.set_existing_address(current)
         self.queue.put(target)

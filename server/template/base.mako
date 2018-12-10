@@ -33,8 +33,15 @@
     
     function assign_nickname(client, address) {
         var nickname = prompt("Please enter a nickname:");
-        if (nickname !== null || nickname !== ""){
+        if (nickname !== null && nickname !== ""){
             send_event(client, "assign_nickname", {"address": address, "nickname": nickname});
+        }
+    }
+    
+    function remove_address(client, address) {
+        var bool = confirm("Are you sure you want to remove this address?");
+        if (bool){
+            send_event(client, "remove", address);
         }
     }
     </script>
@@ -79,11 +86,13 @@
                       <tr>
                         <td><a href="javascript:assign_nickname('${key}', '${element['ip_address']}')">${element['nickname']}</a></td>
                         <td>
+                          <a href="javascript:remove_address('${key}', '${element['ip_address']}')">
                           % if value["current_address"] == element['ip_address']:
                           <b>${element['ip_address']}</b>
                           % else:
                           ${element['ip_address']}
                           % endif
+                          </a>
                         </td>
                         <td>${element['expiration']}</td>
                       </tr>

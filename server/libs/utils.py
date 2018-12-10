@@ -1,5 +1,4 @@
 import datetime
-from pytz.reference import UTC
 
 
 def in_datetime(date, delta=None):
@@ -7,7 +6,7 @@ def in_datetime(date, delta=None):
         date.strip(), "%B %d, %Y  %I:%M:%S %p",
     )
     if delta:
-        converted_date = converted_date + datetime.timedelta(seconds=1).astimezone(UTC)
+        converted_date = converted_date + datetime.timedelta(seconds=1)
     return converted_date
 
 

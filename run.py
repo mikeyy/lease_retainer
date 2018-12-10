@@ -11,11 +11,13 @@ new timer is created according to the new expiring lease date.
 
 
 import time
+
 import protocol
 import timer
 import client
+import parse
 
-from utils import get_seconds_until
+from utils import get_seconds_until, in_datetime
 
 from queue import Queue
 from threading import Event, Thread, Lock
@@ -26,6 +28,7 @@ gain = 30
 # Server to send client details to
 # server = "adwerdz.com"
 server = "adwerdz.com:9999"
+parser = parse.CommandParser()
 _client = client.Client(server=server)
 # Seconds interval to update host with client information
 update_delay = 15
@@ -104,7 +107,9 @@ def update_host(server):
 
     previous_data = None
     previous_address = None
-    current_address = changer.current_address()
+    parser.parse()
+    if "ip_address" in parser.interface:
+        current_address = parser.interface["ip_address"]
     while 1:
         with open(filename, "r") as f:
             file_data = f.read().splitlines()
@@ -121,8 +126,14 @@ def update_host(server):
                     if check(elem, lease)
                 ))
                 lease["nickname"] = nickname
+                lease["expiration"] = in_datetime(
+                    lease["expiration"], convert_to_utc=True).strftime(
+                        "%B %d, %Y  %I:%M:%S %p")
                 named_lease.append(lease)
-            current_address = changer.current_address()
+            previous_address = None
+            parser.parse()
+            if "ip_address" in parser.interface:
+                current_address = parser.interface["ip_address"]
             if named_lease is not previous_data:
                 _client.update(named_lease, current_address)
                 previous_data = named_lease

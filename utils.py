@@ -5,6 +5,8 @@ import random
 import time
 import datetime
 
+from pytz import timezone
+
 filename = "ips.txt"
 MAC_ADDRESS_R = re.compile(
     r"""
@@ -52,6 +54,7 @@ def assign_nickname(address, nickname):
     with open(filename, "w") as f:
         f.write("\n".join(output))
 
+
 def get_seconds_until(date, gain=30):
     # Convert `September 08, 2018  10:49:40 PM` into `2018-09-07 15:30:52`
     # And then into `1536352252.0`
@@ -65,12 +68,14 @@ def get_seconds_until(date, gain=30):
     return until
 
 
-def in_datetime(date, delta=None):
+def in_datetime(date, delta=None, convert_to_utc=False):
     converted_date = datetime.datetime.strptime(
         date.strip(), "%B %d, %Y  %I:%M:%S %p"
     )
     if delta:
         converted_date = converted_date + datetime.timedelta(seconds=1)
+    if convert_to_utc:
+        converted_date = converted_date.astimezone(timezone('UTC'))
     return converted_date
 
 
