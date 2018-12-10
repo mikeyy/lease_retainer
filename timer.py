@@ -55,7 +55,7 @@ class SetTimer(Thread):
                 print(f"Address `{target}` acquired successfully!")
                 try:
                     parser.parse()
-                    new_expiration = parse.interface["expiration"]
+                    new_expiration = parser.interface["expiration"]
                 except (IndexError, KeyError):
                     pass
                 else:
@@ -67,8 +67,8 @@ class SetTimer(Thread):
             print(
                 f"NOTICE: Failed to acquire address `{target}`!"
             )
-        if "ip_address" in parse.interface:
-            if parse.interface["ip_address"] != current:
+        if "ip_address" in parser.interface:
+            if parser.interface["ip_address"] != current:
                 print(f"Reacquiring previous address `{current}`")
                 changer.set_existing_address(current)
         self.queue.put(target)
