@@ -7,8 +7,22 @@ import protocol
 
 from utils import assign_nickname, remove_address
 
+from queue import Queue
+from threading import Thread
+
 changer = protocol.IPChanger()
 actions = ["set", "new", "reset", "assign_nickname", "remove"]
+action_queue = Queue()
+
+
+def run_actions():
+    while 1:
+        d = action_queue.get()
+        if 'arg' in d:
+            d['func'](d['arg'])
+        else:
+            d['func']()
+        time.sleep(60)
 
 
 def get_location():
@@ -56,10 +70,13 @@ class Client(object):
                         address = data["event"]["value"]
                         remove_address(address)
                     if action == "new":
-                        changer.set_new_address()
+                        action_queue.put({"func": changer.set_new_address})
                     if action == "set":
                         value = data["event"]["value"]
-                        changer.set_existing_address(value)
+                        action_queue.put({
+                                          "func": changer.set_existing_address,
+                                          "arg": value
+                                          })
                     if action == "reset":
                         changer.reset()
                     if action == "assign_nickname":
@@ -71,3 +88,6 @@ class Client(object):
                 time.sleep(5)
             else:
                 time.sleep(0.1)
+
+
+Thread(target=run_actions).start()

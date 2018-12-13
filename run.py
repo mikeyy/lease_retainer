@@ -87,14 +87,13 @@ def monitor_file_changes(filename):
                 if address:
                     if address not in disabled:
                         spawn_timer(address)
-
         time.sleep(1)
 
 
 def monitor_timer_changes(queue):
     while 1:
-        address = queue.get()
-        spawn_timer(address, offset=30*60)
+        data = queue.get()
+        spawn_timer(data, offset=30*60)
         time.sleep(1)
 
 

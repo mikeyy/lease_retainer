@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+import time
 import re
 import subprocess
 
@@ -26,6 +26,9 @@ class IPChanger(object):
     reset registry       - Reverts registry to how it was before program use.
     info fingerprint     - Shows current system fingerprint.
     """
+
+    def __init__(self):
+        self.last_activity = 0
 
     def current_address(self):
         return self.get_mac_info()
@@ -65,7 +68,7 @@ class IPChanger(object):
         cmd = "ipchanger newip"
         self.run_command(cmd)
         result = get_interface_details()
-        address = result.interface["ip_address"]
+        address = result["ip_address"]
         with open(filename, "a") as f:
             f.write(f"\n{address}")
 
