@@ -3,4 +3,6 @@ IP address. This is achieved by acquiring the expiring lease date and MAC
 address for the NIC. A timer is then created for executing the necessary
 commands to set the MAC address of the NIC to match the momentarily expiring
 NIC. The previous MAC address is reacquired once the lease has expired, and a
-new timer is created according to the new expiring lease date.  llll!
+new timer is created according to the new expiring lease date.
+
+Includes a remote web panel for remote control and management between multiple clients.
