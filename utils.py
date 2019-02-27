@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 
+import datetime
 import re
 import random
 import time
-import datetime
+
+import parse
+
+from pytz import timezone
+
+parser = parse.CommandParser
+filename = "ips.txt"
 
 MAC_ADDRESS_R = re.compile(
     r"""
@@ -22,6 +29,46 @@ CISCO_MAC_ADDRESS_R = re.compile(
 )
 
 
+def get_interface_details():
+    while 1:
+        result = parser()
+        if hasattr(result, "interface"):
+            if "ip_address" in result.interface:
+                break
+        time.sleep(1)
+    return result.interface
+
+
+def remove_address(address):
+    with open(filename, "r") as f:
+        output = f.read().splitlines()
+    for i, line in enumerate(output):
+        if "|" in line:
+            a = line.split("|")[0]
+        else:
+            a = line
+        if a == address:
+            del output[i]
+            break
+    with open(filename, "w") as f:
+        f.write("\n".join(output))
+
+
+def assign_nickname(address, nickname):
+    with open(filename, "r") as f:
+        output = f.read().splitlines()
+    for i, line in enumerate(output):
+        if "|" in line:
+            a = line.split("|")[0]
+        else:
+            a = line
+        if a == address:
+            output[i] = f"{address}|{nickname}"
+            break
+    with open(filename, "w") as f:
+        f.write("\n".join(output))
+
+
 def get_seconds_until(date, gain=30):
     # Convert `September 08, 2018  10:49:40 PM` into `2018-09-07 15:30:52`
     # And then into `1536352252.0`
@@ -35,12 +82,14 @@ def get_seconds_until(date, gain=30):
     return until
 
 
-def in_datetime(date, delta=None):
+def in_datetime(date, delta=None, convert_to_utc=False):
     converted_date = datetime.datetime.strptime(
         date.strip(), "%B %d, %Y  %I:%M:%S %p"
     )
     if delta:
         converted_date = converted_date + datetime.timedelta(seconds=1)
+    if convert_to_utc:
+        converted_date = converted_date.astimezone(timezone('UTC'))
     return converted_date
 
 

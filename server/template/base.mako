@@ -30,6 +30,20 @@
             dataType: 'json',
         });
     }
+    
+    function assign_nickname(client, address) {
+        var nickname = prompt("Please enter a nickname:");
+        if (nickname !== null && nickname !== ""){
+            send_event(client, "assign_nickname", {"address": address, "nickname": nickname});
+        }
+    }
+    
+    function remove_address(client, address) {
+        var bool = confirm("Are you sure you want to remove this address?");
+        if (bool){
+            send_event(client, "remove", address);
+        }
+    }
     </script>
     <style type="text/css">
         body {
@@ -51,84 +65,66 @@
     </nav>
     
     <div class="container">
-    
-
       % if client_leases:
-        <div class="row">
-          % for key, values in client_leases.items():
-            <div class="col-sm-4 mb-5">
-              <div class="card h-100">
-                <h5 class="card-header">Client: ${key}</h5>
-                <div class="card-body">
-                  <div class="table-responsive">          
-                    <table class="table small">
-                      <thead>
-                        <tr>
-                          <th>Nickname</th>
-                          <th>Address</th>
-                          <th>Expires</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        % for element in values["leases"]:
-                          <tbody>
-                            <tr>
-                              <td>${element['nickname']}</td>
-                              <td>${element['ip_address']}</td>
-                              <td>${element['expiration']}</td>
-                            </tr>
-                          </tbody>
-                        % endfor
-                      </table>
-                    </div>
-                </div>
-                <div class="card-footer">
-                  <div class="dropdown">
-                    <button class="btn btn-info dropdown-toggle btn-md" type="button" data-toggle="dropdown">Change Lease
-                    <span class="caret"></span>
-                    <span class="sr-only">Toggle Dropdown</span></button>
-                    <ul class="dropdown-menu">
-                      % for element in values["leases"]:
-                        <li><a href="javascript:send_event('${key}', 'set', '${element["ip_address"]}')">${element["ip_address"]}</a></li>
-                      % endfor
-                    </ul>
-                    <button type="button btn-md" class="btn btn-primary" onclick="send_event('${key}', 'new')">New Address</button>
+      <div class="row">
+        % for key, value in client_leases.items():
+          <div class="col-sm-4 mb-5">
+            <div class="card h-100">
+              <h5 class="card-header">Client: ${key}</h5>
+              <div class="card-body">
+                <div class="table-responsive">          
+                  <table class="table small">
+                    <thead>
+                      <tr>
+                        <th>Nickname</th>
+                        <th>Address</th>
+                        <th>Expires</th>
+                      </tr>
+                    </thead>
+                    % for element in value["leases"]:
+                    <tbody>
+                      <tr>
+                        <td><a href="javascript:assign_nickname('${key}', '${element['ip_address']}')">${element['nickname']}</a></td>
+                        <td>
+                          <a href="javascript:remove_address('${key}', '${element['ip_address']}')">
+                          % if value["current_address"] == element['ip_address']:
+                          <b>${element['ip_address']}</b>
+                          % else:
+                          ${element['ip_address']}
+                          % endif
+                          </a>
+                        </td>
+                        <td>${element['expiration']}</td>
+                      </tr>
+                    </tbody>
+                    % endfor
+                    </table>
                   </div>
+              </div>
+              <div class="card-footer">
+                <div class="dropdown">
+                  <button class="btn btn-info dropdown-toggle btn-md" type="button" data-toggle="dropdown">Change Lease
+                  <span class="caret"></span>
+                  <span class="sr-only">Toggle Dropdown</span></button>
+                  <ul class="dropdown-menu">
+                    % for element in value["leases"]:
+                    <li><a href="javascript:send_event('${key}', 'set', '${element["ip_address"]}')">${element["ip_address"]}</a></li>
+                    % endfor
+                  </ul>
+                  <button type="button btn-md" class="btn btn-primary" onclick="send_event('${key}', 'new')">New Address</button>
                 </div>
               </div>
             </div>
-            % endfor
-        </div>
-
-    % else:
+          </div>
+          % endfor
+      </div>
+      % else:
       <div class="row mb-4">
         <div class="col-md-8">
           <p>Uh oh, nothing to show.</p>
         </div>
       </div>
-    % endif
-
-      <!-- /.row -->
-
-      <!-- Portfolio Section
-
-      for key, values in client_activity:
-      <div class="row">
-        <div class="col-lg-4 col-sm-6 portfolio-item">
-          <div class="card h-100">
-            <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-            <div class="card-body">
-              <h4 class="card-title">
-                <a href="#">Project One</a>
-              </h4>
-              <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur eum quasi sapiente nesciunt? Voluptatibus sit, repellat sequi itaque deserunt, dolores in, nesciunt, illum tempora ex quae? Nihil, dolorem!</p>
-            </div>
-          </div>
-        </div>
-        endfor
-        -->
-      <hr>
-      <!-- /.row -->
+      % endif
 
       <!-- Call to Action Section -->
       <div class="row mb-4">

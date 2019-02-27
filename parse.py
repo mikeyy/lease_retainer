@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+
 import re
-import socket
 import subprocess
 
 
@@ -69,8 +67,10 @@ class CommandParser(object):
 
         # Bug? StopIteration even with existing items
         # self.interface = next(iter(self._interfaces))
-        self.interface = list(self._interfaces.values())[0]
-
+        try:
+            self.interface = list(self._interfaces.values())[0]
+        except IndexError:
+            self.interface = []
 
 test_config = """Windows IP Configuration
 
@@ -80,7 +80,7 @@ test_config = """Windows IP Configuration
    IP Routing Enabled. . . . . . . . : No
    WINS Proxy Enabled. . . . . . . . : No
    DNS Suffix Search List. . . . . . : socal.rr.com
-   
+
 Ethernet adapter Ethernet 5:
 
    Connection-specific DNS Suffix  . : socal.rr.com

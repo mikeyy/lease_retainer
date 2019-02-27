@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 
-import datetime
 import time
-
-import parse as parser
 import protocol
 
-from run import active_timers
-from utils import get_seconds_until, in_datetime
+from utils import in_datetime, get_interface_details, remove_address
 
 from threading import Thread
 
-parse = parser.CommandParser
 changer = protocol.IPChanger()
 
 
@@ -38,51 +33,59 @@ class SetTimer(Thread):
             print(f"Timer shutting down for `{target}`")
 
     def _expiration_comparison(self, old, new):
-        new_deltad = in_datetime(new, delta=1)
+        new_delta = in_datetime(new, delta=1)
         new_original = in_datetime(new)
         old_original = in_datetime(old)
-        return old_original != new_original and old_original != new_deltad
+        return old_original != new_original and old_original != new_delta
 
     def _retain_address(self, target, old_expiration):
-        current = changer.current_address()
+        result = get_interface_details()
+        current = result["ip_address"]
         if target == current:
             print(f"Address `{current}` is set to expire but active already!")
             return
         print(
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
+<<<<<<< HEAD
         changer.set_existing_address(target)
         result = parse()
-        if "ip_address" not in result.interface:
-            print(
-                f"NOTICE: Failed to acquire address `{target}`"
-            )
-            return
-            
-            if result.interface["ip_address"] == target:
-                print(f"Address `{target}` acquired successfully")
-                for i in range(30):
-                    try:
-                        result = parse()
-                        new_expiration = result.interface["expiration"]
-                    except (IndexError, KeyError):
-                        pass
-                    else: 
-                        if self._expiration_comparison(
-                            old_expiration, new_expiration):
-                            print(
-                                f"Expiration cleared, new expiration `{new_expiration}`")
-                            break
-                        
-                        time.sleep(1)
-                        
+        for i in range(30):
+            if "ip_address" in result.interface:
+                break
+=======
+        for i in range(3):
+            ten_minutes = 10 * 60
+            if changer.last_activity + ten_minutes > time.time():
+                wait_for = (changer.last_activity + ten_minutes) - time.time()
+                readable = time.strftime("%M minute(s) and %S seconds", time.gmtime(wait_for))
+                print(f"Waiting for {readable} before acquiring next lease")
+                time.sleep(wait_for)
+            print(f"Attempt #{i+1}: Trying to acquire `{target}`...")
+            changer.set_mac_address(self.data["mac_address"])
+            changer.last_activity = time.time()
+            result = get_interface_details()
+            if result["ip_address"] == target:
+                print(f"Address `{target}` acquired successfully!")
+                try:
+                    result = get_interface_details()
+                    new_expiration = result["expiration"]
+                except (IndexError, KeyError):
+                    pass
                 else:
-                    print(
-                        f"NOTICE: There was an issue obtaining an extended expiration for `{target}`"
-                    )
-
-
-            print(f"Reacquiring previous address `{current}`")
-            changer.set_existing_address(current)  
-
-        self.queue.put(target)
+                    if self._expiration_comparison(old_expiration, new_expiration):
+                        print(
+                            f"Expiration cleared, new expiration `{new_expiration}.`")
+                    self.queue.put({
+                        "ip_address": target,
+                        "mac_address": self.data["mac_address"],
+                        "expiration": new_expiration,
+                    })
+                    break
+>>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
+        else:
+            print(
+                f"NOTICE: Failed to acquire address `{target}`!"
+            )
+            print(f"Removing dead address `{target}`")
+            remove_address(target)

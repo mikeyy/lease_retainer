@@ -1,11 +1,28 @@
 #!/usr/bin/env python3
 
 import requests
-import subprocess
-import sys
 import time
 
 import protocol
+
+from utils import assign_nickname, remove_address
+
+from queue import Queue
+from threading import Thread
+
+changer = protocol.IPChanger()
+actions = ["set", "new", "reset", "assign_nickname", "remove"]
+action_queue = Queue()
+
+
+def run_actions():
+    while 1:
+        d = action_queue.get()
+        if 'arg' in d:
+            d['func'](d['arg'])
+        else:
+            d['func']()
+        time.sleep(60)
 
 
 def get_location():
@@ -20,18 +37,14 @@ def get_location():
         time.sleep(1)
 
 
-changer = protocol.IPChanger()
-actions = ["set", "new", "reset"]
-
-
 class Client(object):
     def __init__(self, server):
         self.client_id = get_location()
         self.server = server
         self.session = requests.Session()
 
-    def update(self, changer_data):
-        fields = {self.client_id: ""}
+    def update(self, changer_data, current_address):
+        fields = {self.client_id: "", "current_address": current_address}
         fields[self.client_id] = changer_data
         request = requests.Request(
             method="POST", url=f"http://{self.server}/update", json=fields
@@ -53,15 +66,28 @@ class Client(object):
                 data = resp.json()
                 if data["event"]["action"] in actions:
                     action = data["event"]["action"]
+                    if action == "remove":
+                        address = data["event"]["value"]
+                        remove_address(address)
+                    if action == "new":
+                        action_queue.put({"func": changer.set_new_address})
                     if action == "set":
                         value = data["event"]["value"]
-                        changer.set_existing_address(value)
-                    if action == "new":
-                        changer.set_new_address()
+                        action_queue.put({
+                                          "func": changer.set_existing_address,
+                                          "arg": value
+                                          })
                     if action == "reset":
                         changer.reset()
+                    if action == "assign_nickname":
+                        address = data["event"]["value"]["address"]
+                        nickname = data["event"]["value"]["nickname"]
+                        assign_nickname(address, nickname)
             except Exception:
                 # In check-up mode, tolerant delay advised.
                 time.sleep(5)
             else:
                 time.sleep(0.1)
+
+
+Thread(target=run_actions).start()

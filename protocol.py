@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-import pickle
+import time
 import re
 import subprocess
-import time
 
-from utils import dedup_dict_list
+from utils import dedup_dict_list, get_interface_details
 
-# Ew, will fix ... 
 filename = "ips.txt"
 
 class IPChanger(object):
@@ -29,20 +27,17 @@ class IPChanger(object):
     info fingerprint     - Shows current system fingerprint.
     """
 
+    def __init__(self):
+        self.last_activity = 0
+
     def current_address(self):
         return self.get_mac_info()
 
     def run_command(self, cmd):
-        for i in range(5):
-            try:
-                return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
-            except Exception as e:
-                print(f"Command `{cmd}` command failed to execute successfully, waiting 30 seconds. Retry attempt {1+i}")
-                time.sleep(30)
-        else:
-            print(
-                f"Command `{cmd}` didn't execute successfully after 5 attempts"
-            )
+        try:
+            return subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("ascii")
+        except Exception as e:
+            print(f"Command `{cmd}` command failed to execute successfully.")
 
     def get_mac_info(self):
         # MAC ID:     021C420EEA2E
@@ -50,19 +45,22 @@ class IPChanger(object):
         cmd = "ipchanger mac show"
         result = self.run_command(cmd)
         if result is not None:
-            pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
-            m = re.match(pattern, result.rstrip(" \t\r\n\0"))
-            if m:
-                address = m.groupdict()["ip_address"]
-                return address
-
+            for line in result.split("\n"):
+                pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
+                if m:
+                    address = m.groupdict()["ip_address"]
+                    return address
 
     def set_mac_address(self, address):
         cmd = f"ipchanger mac set {address}"
         result = self.run_command(cmd)
-        print(result)
         if result is not None:
-            pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
+<<<<<<< HEAD
+            pattern = r"^IP Address: (?P<ip_address>[^\s]+)"
+=======
+            pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+>>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
             # Will assume there is always output
             for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
@@ -70,23 +68,31 @@ class IPChanger(object):
                     address = m.groupdict()["ip_address"]
                     break
 
-
     def set_new_address(self):
         cmd = "ipchanger newip"
+<<<<<<< HEAD
         result = self.run_command(cmd)
+        print(result)
         if result is not None:
-            pattern = r"^IP Address: (?P<ip_address>[^\s,]+)"
+            pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
             # Will assume there is always output
             for line in result:
-                m = re.match(pattern, result.rstrip(" \t\r\n\0"))
+                m = re.match(pattern, line.rstrip(" \t\r\n\0"))
                 if m:
                     address = m.groupdict()["ip_address"]
                     with open(filename, "a") as f:
                         f.write(address)
+=======
+        self.run_command(cmd)
+        result = get_interface_details()
+        address = result["ip_address"]
+        with open(filename, "a") as f:
+            f.write(f"\n{address}")
+>>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
 
     def set_existing_address(self, address):
         try:
-            data = next(
+            next(
                 iter(
                     [
                         output
@@ -114,11 +120,10 @@ class IPChanger(object):
             pattern = r"^[0-9]+: \[[a-zA-Z0-9]+\], (?P<ip_address>[^\s,]+), (?P<mac_address>[ABCDEFabcdef\d-]+), Expires: .*?, (?P<expiration>[\D\d]+)"
             for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
-                if not m:
-                    continue
-                groupdict = m.groupdict()
-                _cache.append(groupdict)
-                yield groupdict
+                if m:
+                    groupdict = m.groupdict()
+                    _cache.append(groupdict)
+                    yield groupdict
 
         try:
             cache = [eval(l) for l in self._load_cache() if len(l) > 2]
