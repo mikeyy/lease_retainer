@@ -56,11 +56,7 @@ class IPChanger(object):
         cmd = f"ipchanger mac set {address}"
         result = self.run_command(cmd)
         if result is not None:
-<<<<<<< HEAD
-            pattern = r"^IP Address: (?P<ip_address>[^\s]+)"
-=======
             pattern = r"^IP Address: (?P<ip_address>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
->>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
             # Will assume there is always output
             for line in result.split("\n"):
                 m = re.match(pattern, line.rstrip(" \t\r\n\0"))
@@ -70,9 +66,7 @@ class IPChanger(object):
 
     def set_new_address(self):
         cmd = "ipchanger newip"
-<<<<<<< HEAD
         result = self.run_command(cmd)
-        print(result)
         if result is not None:
             pattern = r"^New IP Address: (?P<ip_address>[^\s]+)"
             # Will assume there is always output
@@ -82,13 +76,10 @@ class IPChanger(object):
                     address = m.groupdict()["ip_address"]
                     with open(filename, "a") as f:
                         f.write(address)
-=======
-        self.run_command(cmd)
         result = get_interface_details()
         address = result["ip_address"]
         with open(filename, "a") as f:
             f.write(f"\n{address}")
->>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
 
     def set_existing_address(self, address):
         try:

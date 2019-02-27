@@ -47,13 +47,11 @@ class SetTimer(Thread):
         print(
             f"Monitored address `{target}` is due for expiration on `{old_expiration}`"
         )
-<<<<<<< HEAD
         changer.set_existing_address(target)
         result = parse()
         for i in range(30):
             if "ip_address" in result.interface:
                 break
-=======
         for i in range(3):
             ten_minutes = 10 * 60
             if changer.last_activity + ten_minutes > time.time():
@@ -82,7 +80,6 @@ class SetTimer(Thread):
                         "expiration": new_expiration,
                     })
                     break
->>>>>>> 91f06e19eee46ae68e1c8e487353a3c3ae5089d3
         else:
             print(
                 f"NOTICE: Failed to acquire address `{target}`!"
