@@ -1,18 +1,6 @@
-                                                   ____+
-                                                  /    |
-                                                 /    *| 
-                                           _[]+_/  /|  |
-                                          / / / /./ |  |
-                                      ___/ /_/ /_   |  |
-                                     /__   _   __/* |  |
-                                     ___/ /_/ /_    |  |
-                                   +/__  _   ___/   |  |
-                                       / / / /   ,---'+ `---.
-                                      /_/ /_/    |__________|
-                                        *               *
-                                    ddd                        lll
-                                     dd    eeeee    aaaaa  a    ll
-                                     dd   ee    ee      aaa     ll
-                                   dddd   eeeeee    aaaaaaa     ll
-                                  dd dd   ee     e aaa  aaa     ll
-                                   ddddd   eeeeee   aaaaaaaa   llll!
+The purpose of this script is to ensure an expiring lease retains it's current
+IP address. This is achieved by acquiring the expiring lease date and MAC
+address for the NIC. A timer is then created for executing the necessary
+commands to set the MAC address of the NIC to match the momentarily expiring
+NIC. The previous MAC address is reacquired once the lease has expired, and a
+new timer is created according to the new expiring lease date.  llll!
